@@ -1,0 +1,52 @@
+{
+  "name": "habit-tracker",
+  "version": "1.0.0",
+  "main": "expo-router/entry",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "verify": "tsc --noEmit",
+    "bump-version": "node scripts/export-build.js --command none",
+    "export:prod": "node scripts/export-build.js --env production --command \"npx expo export\"",
+    "export:dev": "node scripts/export-build.js --env development --command \"npx expo export\"",
+    "release:aab": "node scripts/build-prod-aab.js"
+  },
+  "dependencies": {
+    "@expo/vector-icons": "^15.0.2",
+    "date-fns": "4.1.0",
+    "expo": "~58.0.17",
+    "expo-blur": "~58.0.5",
+    "expo-font": "~58.0.9",
+    "expo-haptics": "~58.0.7",
+    "expo-linear-gradient": "~58.0.3",
+    "expo-notifications": "~58.1.6",
+    "expo-router": "~58.0.25",
+    "expo-sqlite": "~58.0.13",
+    "expo-status-bar": "~58.0.4",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "react-hook-form": "7.54.2",
+    "react-native": "0.88.0",
+    "react-native-gesture-handler": "~3.3.0",
+    "react-native-reanimated": "4.7.1",
+    "react-native-safe-area-context": "~5.10.1",
+    "react-native-screens": "~4.30.0",
+    "zod": "3.24.2",
+    "zustand": "5.0.16"
+  },
+  "devDependencies": {
+    "@testing-library/react-native": "^14.1.0",
+    "@types/react": "~19.3.0",
+    "@types/react-native": "^0.72.8",
+    "eslint": "^10.13.0",
+    "jest": "^30.5.2",
+    "jest-expo": "^58.0.12",
+    "prettier": "^3.9.10",
+    "typescript": "~6.0.3"
+  },
+  "private": true
+}
