@@ -88,6 +88,17 @@ if (fs.existsSync(wrapperPropPath)) {
   }
 }
 
+// Ensure JS bundle is embedded offline into Debug APK (standalone mode)
+const buildGradlePath = path.resolve(__dirname, '../android/app/build.gradle');
+if (fs.existsSync(buildGradlePath)) {
+  let buildGradle = fs.readFileSync(buildGradlePath, 'utf8');
+  if (buildGradle.includes('react {') && !buildGradle.includes('debuggableVariants = []')) {
+    buildGradle = buildGradle.replace('react {', 'react {\n    debuggableVariants = []');
+    fs.writeFileSync(buildGradlePath, buildGradle, 'utf8');
+    log(`📦 Configured debuggableVariants = [] (Standalone offline JS bundle mode enabled).`, colors.cyan);
+  }
+}
+
 // ─── 4. Gradle assembleDebug ───────────────────────────────────────────────────
 log(`\n🔨 Compiling Debug APK with Gradle (assembleDebug)...`, colors.bold + colors.cyan);
 const isWindows = process.platform === 'win32';
