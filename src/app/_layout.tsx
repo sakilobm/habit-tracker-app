@@ -14,7 +14,7 @@ export default function RootLayout() {
       <Stack
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: '#0B0F19' },
+          contentStyle: { backgroundColor: '#F8FAFC' },
           animation: 'fade',
         }}
       >
@@ -27,6 +27,6 @@ export default function RootLayout() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0B0F19',
+    backgroundColor: '#3730A3',
   },
 });

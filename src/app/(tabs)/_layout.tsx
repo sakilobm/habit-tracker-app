@@ -1,47 +1,44 @@
+import React, { useState } from 'react';
 import { Tabs } from 'expo-router';
-import React from 'react';
-import { StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { View, StyleSheet } from 'react-native';
+import { CustomTabBar } from '../../components/common/CustomTabBar';
+import { AddHabitModal } from '../../components/home/AddHabitModal';
 
 /**
- * Tab Navigation Layout
- * Configures the primary bottom navigation shell with dark glass styling.
+ * Tab Navigation Shell
+ * Integrates Routinr's custom notched tab bar with raised center + action button.
  */
 export default function TabLayout() {
+  const [isAddModalVisible, setIsAddModalVisible] = useState(false);
+
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: '#6366F1',
-        tabBarInactiveTintColor: '#94A3B8',
-        tabBarStyle: styles.tabBar,
-        tabBarLabelStyle: styles.tabBarLabel,
-      }}
-    >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Today',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="calendar-outline" size={size} color={typeof color === 'string' ? color : '#94A3B8'} />
-          ),
+    <View style={styles.container}>
+      <Tabs
+        tabBar={(props) => (
+          <CustomTabBar {...props} onOpenAddHabit={() => setIsAddModalVisible(true)} />
+        )}
+        screenOptions={{
+          headerShown: false,
         }}
+      >
+        <Tabs.Screen name="index" options={{ title: 'Home' }} />
+        <Tabs.Screen name="discover" options={{ title: 'Discover' }} />
+        <Tabs.Screen name="stats" options={{ title: 'Stats' }} />
+        <Tabs.Screen name="profile" options={{ title: 'Profile' }} />
+      </Tabs>
+
+      {/* Floating Center + Action Modal */}
+      <AddHabitModal
+        visible={isAddModalVisible}
+        onClose={() => setIsAddModalVisible(false)}
       />
-    </Tabs>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  tabBar: {
-    backgroundColor: '#0F172A',
-    borderTopColor: 'rgba(255, 255, 255, 0.08)',
-    borderTopWidth: 1,
-    height: 60,
-    paddingBottom: 8,
-    paddingTop: 8,
-  },
-  tabBarLabel: {
-    fontSize: 12,
-    fontWeight: '600',
+  container: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
   },
 });

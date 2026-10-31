@@ -1,26 +1,95 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet, ScrollView, SafeAreaView, FlatList } from 'react-native';
+import { useRouter } from 'expo-router';
+import { CurvedHeader } from '../../components/common/CurvedHeader';
+import { HabitCardList } from '../../components/home/HabitCardList';
+import { HabitCardDual } from '../../components/home/HabitCardDual';
+import { HabitCardGrid } from '../../components/home/HabitCardGrid';
+import { HabitActionSheet } from '../../components/home/HabitActionSheet';
+import { useHomeHabits } from '../../features/habits/hooks/useHomeHabits';
 
 /**
- * Today Screen Shell
- * Clean declarative view shell for today's habits list.
+ * Home View Shell (Declarative, < 120 lines)
+ * Features Routinr curved header with 3-way layout switcher, dynamic cards, and action sheet.
  */
-export default function TodayScreen() {
+export default function HomeScreen() {
+  const router = useRouter();
+  const {
+    habits,
+    layoutMode,
+    activeHabitForSheet,
+    handleToggleHabit,
+    handleSelectLayout,
+    handleOpenSheet,
+    handleCloseSheet,
+  } = useHomeHabits();
+
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.subtitle}>Welcome back</Text>
-          <Text style={styles.title}>Today's Focus</Text>
-        </View>
-        <View style={styles.glassCard}>
-          <Text style={styles.cardTitle}>Habit Tracker Baseline Ready</Text>
-          <Text style={styles.cardText}>
-            Clean architecture initialized with Expo SDK 58, SQLite, Zustand, and Liquid Glassmorphism design tokens.
+      <CurvedHeader
+        currentLayout={layoutMode}
+        onSelectLayout={handleSelectLayout}
+        onPressProfile={() => router.push('/profile')}
+      />
+
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Today's Habits</Text>
+          <Text style={styles.sectionSubtitle}>
+            {habits.filter((h) => h.isCompleted).length} of {habits.length} completed
           </Text>
         </View>
-      </View>
+
+        {layoutMode === 'list' && (
+          <View>
+            {habits.map((habit) => (
+              <HabitCardList
+                key={habit.id}
+                habit={habit}
+                onPress={handleOpenSheet}
+                onToggle={handleToggleHabit}
+              />
+            ))}
+          </View>
+        )}
+
+        {layoutMode === 'dual' && (
+          <View style={styles.dualContainer}>
+            {habits.map((habit) => (
+              <HabitCardDual
+                key={habit.id}
+                habit={habit}
+                onPress={handleOpenSheet}
+                onToggle={handleToggleHabit}
+              />
+            ))}
+          </View>
+        )}
+
+        {layoutMode === 'grid' && (
+          <View style={styles.gridContainer}>
+            {habits.map((habit) => (
+              <HabitCardGrid
+                key={habit.id}
+                habit={habit}
+                onPress={handleOpenSheet}
+                onToggle={handleToggleHabit}
+              />
+            ))}
+          </View>
+        )}
+      </ScrollView>
+
+      {/* Action Bottom Sheet (Screenshot 4) */}
+      <HabitActionSheet
+        habit={activeHabitForSheet}
+        visible={Boolean(activeHabitForSheet)}
+        onClose={handleCloseSheet}
+        onNavigateToStats={() => router.push('/stats')}
+      />
     </SafeAreaView>
   );
 }
@@ -28,45 +97,35 @@ export default function TodayScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#0B0F19',
+    backgroundColor: '#3730A3', // Header bleed
   },
-  container: {
-    flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 16,
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingTop: 18,
+    paddingBottom: 90, // Avoid bottom tab bar overlap
+    backgroundColor: '#F8FAFC',
+    minHeight: '100%',
   },
-  header: {
-    marginBottom: 24,
+  sectionHeader: {
+    marginBottom: 14,
   },
-  subtitle: {
-    fontSize: 14,
-    color: '#94A3B8',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    fontWeight: '600',
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#0F172A',
   },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#F8FAFC',
-    marginTop: 4,
+  sectionSubtitle: {
+    fontSize: 13,
+    color: '#64748B',
+    marginTop: 2,
   },
-  glassCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    borderWidth: 1,
-    borderRadius: 16,
-    padding: 20,
+  dualContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginHorizontal: -6,
   },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#E0E7FF',
-    marginBottom: 8,
-  },
-  cardText: {
-    fontSize: 14,
-    lineHeight: 22,
-    color: '#94A3B8',
+  gridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
   },
 });
