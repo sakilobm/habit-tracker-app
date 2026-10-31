@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "verify": "tsc --noEmit",
+    "build:debug": "node scripts/build-debug-apk.js",
     "bump-version": "node scripts/export-build.js --command none",
     "export:prod": "node scripts/export-build.js --env production --command \"npx expo export\"",
     "export:dev": "node scripts/export-build.js --env development --command \"npx expo export\"",

@@ -11,6 +11,12 @@ module.exports = function withAndroidSigning(config) {
 };
 
 function addSigningConfig(buildGradle) {
+  // Only inject release signing config in production builds
+  if (process.env.APP_ENV !== 'production') {
+    console.log(`[withAndroidSigning] Non-production environment ("${process.env.APP_ENV || 'development'}"). Skipping release signing config.`);
+    return buildGradle;
+  }
+
   const keystorePath = process.env.RELEASE_KEYSTORE_PATH;
   const keystorePassword = process.env.RELEASE_KEYSTORE_PASSWORD;
   const keyAlias = process.env.RELEASE_KEY_ALIAS;
@@ -35,8 +41,11 @@ function addSigningConfig(buildGradle) {
             keyPassword "${keyPassword}"
         }`;
 
-  // 1. Inject release signing configuration inside signingConfigs idempotently
-  if (buildGradle.includes('signingConfigs {') && !/signingConfigs\s*\{[\s\S]*?release\s*\{/.test(buildGradle)) {
+  // 1. Inject release signing configuration inside signingConfigs block accurately
+  const signingConfigsMatch = buildGradle.match(/signingConfigs\s*\{([\s\S]*?)\n\s{4}\}/);
+  const hasReleaseSigning = signingConfigsMatch && /release\s*\{/.test(signingConfigsMatch[1]);
+
+  if (buildGradle.includes('signingConfigs {') && !hasReleaseSigning) {
     buildGradle = buildGradle.replace(
       /signingConfigs\s*\{/,
       `signingConfigs {${releaseSigningBlock}`
