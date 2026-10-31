@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, SafeAreaView, FlatList } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { CurvedHeader } from '../../components/common/CurvedHeader';
 import { HabitCardList } from '../../components/home/HabitCardList';
@@ -25,7 +25,7 @@ export default function HomeScreen() {
   } = useHomeHabits();
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View style={styles.safeArea}>
       <CurvedHeader
         currentLayout={layoutMode}
         onSelectLayout={handleSelectLayout}
@@ -90,7 +90,7 @@ export default function HomeScreen() {
         onClose={handleCloseSheet}
         onNavigateToStats={() => router.push('/stats')}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 

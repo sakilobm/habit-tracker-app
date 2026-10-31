@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface ProfileHeroProps {
   name: string;
@@ -13,8 +14,10 @@ interface ProfileHeroProps {
  * Lavender/indigo gradient header with avatar, edit badge, name, and email.
  */
 export const ProfileHero: React.FC<ProfileHeroProps> = ({ name, email, onEditPress }) => {
+  const insets = useSafeAreaInsets();
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: Math.max(insets.top, 20) + 16 }]}>
       {/* Background circular ripple decor */}
       <View style={styles.rippleDecor} />
 

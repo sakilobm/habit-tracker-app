@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, SafeAreaView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useHabitStats } from '../../features/stats/hooks/useHabitStats';
 import { ConsistencyChart } from '../../components/stats/ConsistencyChart';
 import { StatsMetricCards } from '../../components/stats/StatsMetricCards';
@@ -14,6 +15,7 @@ import { ReflectionNoteCard } from '../../components/stats/ReflectionNoteCard';
  */
 export default function StatsScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const {
     currentHabit,
     stats,
@@ -26,18 +28,18 @@ export default function StatsScreen() {
 
   if (!currentHabit || !stats) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <View style={[styles.safeArea, { paddingTop: insets.top }]}>
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>No habit data available yet.</Text>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View style={styles.safeArea}>
       {/* Top Header Bar */}
-      <View style={styles.topBar}>
+      <View style={[styles.topBar, { paddingTop: Math.max(insets.top, 16) + 8 }]}>
         <TouchableOpacity style={styles.iconButton} onPress={() => router.push('/')}>
           <Ionicons name="chevron-back" size={20} color="#1E293B" />
         </TouchableOpacity>
@@ -111,7 +113,7 @@ export default function StatsScreen() {
           </View>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 

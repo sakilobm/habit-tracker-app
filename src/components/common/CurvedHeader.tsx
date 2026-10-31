@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { HabitLayoutMode } from '../../types/habit';
 
 interface CurvedHeaderProps {
@@ -20,8 +21,10 @@ export const CurvedHeader: React.FC<CurvedHeaderProps> = ({
   onOpenCalendar,
   onPressProfile,
 }) => {
+  const insets = useSafeAreaInsets();
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: Math.max(insets.top, 16) + 10 }]}>
       <View style={styles.topRow}>
         {/* Left Avatar */}
         <TouchableOpacity style={styles.avatarButton} onPress={onPressProfile} activeOpacity={0.8}>

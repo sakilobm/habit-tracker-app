@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, SafeAreaView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useHabitStore } from '../../features/habits/stores/habitStore';
 import * as Haptics from 'expo-haptics';
 
@@ -9,6 +10,7 @@ import * as Haptics from 'expo-haptics';
  * Browse curated routine templates and habit blueprints.
  */
 export default function DiscoverScreen() {
+  const insets = useSafeAreaInsets();
   const { addHabit } = useHabitStore();
 
   const curatedRoutines = [
@@ -47,8 +49,8 @@ export default function DiscoverScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.header}>
+    <View style={styles.safeArea}>
+      <View style={[styles.header, { paddingTop: Math.max(insets.top, 16) + 10 }]}>
         <Text style={styles.headerTitle}>Discover Routines</Text>
         <Text style={styles.headerSubtitle}>Curated habits based on behavioral science</Text>
       </View>
@@ -80,7 +82,7 @@ export default function DiscoverScreen() {
           </View>
         ))}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, SafeAreaView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ProfileHero } from '../../components/profile/ProfileHero';
 import { UpgradeProCard } from '../../components/profile/UpgradeProCard';
@@ -10,7 +10,7 @@ import { UpgradeProCard } from '../../components/profile/UpgradeProCard';
  */
 export default function ProfileScreen() {
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Lavender Curved Hero Header */}
         <ProfileHero
@@ -68,7 +68,7 @@ export default function ProfileScreen() {
           </View>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
