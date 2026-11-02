@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { HabitWithStatus } from '../../types/habit';
+import { BeautifulHabitIcon } from './BeautifulHabitIcon';
 
 interface HabitCardDualProps {
   habit: HabitWithStatus;
@@ -17,17 +18,20 @@ export const HabitCardDual: React.FC<HabitCardDualProps> = ({ habit, onPress, on
     <TouchableOpacity
       style={styles.card}
       onPress={() => onPress(habit)}
-      activeOpacity={0.85}
+      activeOpacity={0.88}
     >
       <View style={styles.topRow}>
-        <View style={styles.iconBadge}>
-          <Ionicons name={(habit.icon || 'sparkles-outline') as any} size={18} color="#4F46E5" />
-        </View>
+        <BeautifulHabitIcon
+          icon={habit.icon}
+          title={habit.title}
+          size={40}
+        />
         <TouchableOpacity
           style={[styles.checkCircle, habit.isCompleted && styles.checkCircleCompleted]}
           onPress={() => onToggle(habit.id)}
+          activeOpacity={0.7}
         >
-          {habit.isCompleted && <Ionicons name="checkmark" size={14} color="#FFFFFF" />}
+          {habit.isCompleted && <Ionicons name="checkmark" size={16} color="#FFFFFF" />}
         </TouchableOpacity>
       </View>
 
@@ -36,17 +40,10 @@ export const HabitCardDual: React.FC<HabitCardDualProps> = ({ habit, onPress, on
       </Text>
 
       <View style={styles.streakRow}>
-        <Ionicons name="flame" size={12} color="#F59E0B" />
-        <Text style={styles.streakText}>{habit.currentStreak}d streak</Text>
-      </View>
-
-      <View style={styles.progressBarBackground}>
-        <View
-          style={[
-            styles.progressBarFill,
-            { width: `${habit.isCompleted ? 100 : (habit.currentValue / habit.targetCount) * 100}%` },
-          ]}
-        />
+        <Ionicons name="flash-outline" size={12} color="#64748B" />
+        <Text style={styles.streakText}>
+          {habit.currentStreak > 0 ? `${habit.currentStreak}d streak` : 'No streak'}
+        </Text>
       </View>
     </TouchableOpacity>
   );
@@ -56,16 +53,16 @@ const styles = StyleSheet.create({
   card: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    borderRadius: 18,
+    borderRadius: 20,
     padding: 14,
     margin: 6,
     borderWidth: 1,
     borderColor: '#F1F5F9',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
+    shadowOpacity: 0.03,
     shadowRadius: 6,
-    elevation: 2,
+    elevation: 1.5,
   },
   topRow: {
     flexDirection: 'row',
@@ -73,26 +70,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 10,
   },
-  iconBadge: {
-    width: 34,
-    height: 34,
-    borderRadius: 12,
-    backgroundColor: '#EEF2FF',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   checkCircle: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    borderWidth: 1.5,
-    borderColor: '#CBD5E1',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F1F5F9',
     justifyContent: 'center',
     alignItems: 'center',
   },
   checkCircleCompleted: {
-    backgroundColor: '#4F46E5',
-    borderColor: '#4F46E5',
+    backgroundColor: '#7C83FD',
   },
   title: {
     fontSize: 14,
@@ -105,23 +92,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    marginBottom: 8,
   },
   streakText: {
-    fontSize: 11,
+    fontSize: 12,
     color: '#64748B',
     fontWeight: '500',
   },
-  progressBarBackground: {
-    height: 6,
-    backgroundColor: '#EEF2FF',
-    borderRadius: 3,
-    overflow: 'hidden',
-  },
-  progressBarFill: {
-    height: '100%',
-    backgroundColor: '#6366F1',
-    borderRadius: 3,
-  },
 });
-

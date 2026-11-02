@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useCallback } from 'react';
 import * as Haptics from 'expo-haptics';
 import { useHabitStore } from '../stores/habitStore';
-import { HabitLayoutMode, HabitWithStatus, TimeOfDay } from '../../../types/habit';
+import { HabitLayoutMode, HabitWithStatus } from '../../../types/habit';
 
 /**
  * Headless Hook: Home Screen Habit Management & Layout State
- * Encapsulates view switching, routine filtering, completion toggles, and device haptics.
+ * Encapsulates view switching, routine filtering, completion toggles,
+ * hemicycle percentage calculations, and device haptics.
  */
 export function useHomeHabits() {
   const {
@@ -50,20 +51,22 @@ export function useHomeHabits() {
     [openHabitSheet]
   );
 
-  // Group habits by time of day
-  const groupedHabits = useMemo(() => {
-    const morning = habits.filter((h) => h.timeOfDay === 'morning');
-    const afternoon = habits.filter((h) => h.timeOfDay === 'afternoon');
-    const evening = habits.filter((h) => h.timeOfDay === 'evening');
-    const anytime = habits.filter((h) => h.timeOfDay === 'anytime');
+  // Dynamic calculations for Hemicycle Arc and Streak Cards
+  const { completedCount, totalCount, completionPercentage, streakDays, weekAverage } = useMemo(() => {
+    const total = habits.length;
+    const completed = habits.filter((h) => h.isCompleted).length;
+    const percentage = total > 0 ? (completed / total) * 100 : 0;
+    const maxStreak = habits.reduce((max, h) => Math.max(max, h.currentStreak), 0);
+
+    // Dynamic week average matches completion rate
+    const avg = total > 0 ? Math.round((completed / total) * 100) : 0;
 
     return {
-      morning,
-      afternoon,
-      evening,
-      anytime,
-      totalCount: habits.length,
-      completedCount: habits.filter((h) => h.isCompleted).length,
+      completedCount: completed,
+      totalCount: total,
+      completionPercentage: percentage,
+      streakDays: maxStreak,
+      weekAverage: avg,
     };
   }, [habits]);
 
@@ -73,7 +76,11 @@ export function useHomeHabits() {
     layoutMode,
     selectedDate,
     activeHabitForSheet,
-    groupedHabits,
+    completedCount,
+    totalCount,
+    completionPercentage,
+    streakDays,
+    weekAverage,
     handleToggleHabit,
     handleSelectLayout,
     handleOpenSheet,
@@ -81,4 +88,3 @@ export function useHomeHabits() {
     setSelectedDate,
   };
 }
-

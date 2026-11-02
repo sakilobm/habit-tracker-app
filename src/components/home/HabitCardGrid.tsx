@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { HabitWithStatus } from '../../types/habit';
+import { BeautifulHabitIcon } from './BeautifulHabitIcon';
 
 interface HabitCardGridProps {
   habit: HabitWithStatus;
@@ -10,30 +11,31 @@ interface HabitCardGridProps {
 }
 
 /**
- * 4-Grid Compact Icon Habit Card
+ * 3-Column Compact Grid Habit Card
  */
 export const HabitCardGrid: React.FC<HabitCardGridProps> = ({ habit, onPress, onToggle }) => {
   return (
     <TouchableOpacity
-      style={[styles.card, habit.isCompleted && styles.cardCompleted]}
+      style={styles.card}
       onPress={() => onPress(habit)}
-      activeOpacity={0.8}
+      activeOpacity={0.88}
     >
-      <View style={styles.iconContainer}>
-        <Ionicons
-          name={(habit.icon || 'sparkles-outline') as any}
-          size={22}
-          color={habit.isCompleted ? '#4F46E5' : '#64748B'}
-        />
-      </View>
+      <BeautifulHabitIcon
+        icon={habit.icon}
+        title={habit.title}
+        size={44}
+      />
+
       <Text style={styles.title} numberOfLines={1}>
         {habit.title}
       </Text>
+
       <TouchableOpacity
-        style={[styles.circle, habit.isCompleted && styles.circleCompleted]}
+        style={[styles.checkCircle, habit.isCompleted && styles.checkCircleCompleted]}
         onPress={() => onToggle(habit.id)}
+        activeOpacity={0.7}
       >
-        {habit.isCompleted && <Ionicons name="checkmark" size={12} color="#FFFFFF" />}
+        {habit.isCompleted && <Ionicons name="checkmark" size={14} color="#FFFFFF" />}
       </TouchableOpacity>
     </TouchableOpacity>
   );
@@ -41,48 +43,37 @@ export const HabitCardGrid: React.FC<HabitCardGridProps> = ({ habit, onPress, on
 
 const styles = StyleSheet.create({
   card: {
-    width: '23%',
-    aspectRatio: 0.9,
+    width: '30%',
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 8,
-    margin: '1%',
+    borderRadius: 18,
+    padding: 10,
+    margin: '1.6%',
     alignItems: 'center',
-    justifyContent: 'space-between',
     borderWidth: 1,
     borderColor: '#F1F5F9',
-    elevation: 1,
-  },
-  cardCompleted: {
-    borderColor: '#C7D2FE',
-    backgroundColor: '#F5F7FF',
-  },
-  iconContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 10,
-    backgroundColor: '#F8FAFC',
-    justifyContent: 'center',
-    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 5,
+    elevation: 1.5,
   },
   title: {
-    fontSize: 10,
-    fontWeight: '600',
+    fontSize: 12,
+    fontWeight: '700',
     color: '#0F172A',
+    marginTop: 8,
+    marginBottom: 8,
     textAlign: 'center',
   },
-  circle: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: '#CBD5E1',
+  checkCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#F1F5F9',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  circleCompleted: {
-    backgroundColor: '#4F46E5',
-    borderColor: '#4F46E5',
+  checkCircleCompleted: {
+    backgroundColor: '#7C83FD',
   },
 });
-

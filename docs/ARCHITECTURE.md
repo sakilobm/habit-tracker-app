@@ -37,11 +37,16 @@ habit-tracker/
 │   │   │   ├── CurvedHeader.tsx      # Top indigo curved header with view switcher
 │   │   │   └── CustomTabBar.tsx      # Notched SVG tab bar with floating + button
 │   │   ├── home/
-│   │   │   ├── AddHabitModal.tsx     # New habit creation modal
-│   │   │   ├── HabitActionSheet.tsx  # Habit action bottom sheet modal
-│   │   │   ├── HabitCardList.tsx     # Single-column habit card with striped bar
-│   │   │   ├── HabitCardDual.tsx     # 2-column compact habit card
-│   │   │   └── HabitCardGrid.tsx     # 4-column compact habit card
+│   │   │   ├── HomeHeaderWithCalendar.tsx # Lavender header with 7-day ribbon & 3-way switcher
+│   │   │   ├── DottedFanArc.tsx           # Hemicycle dotted arc gauge (Today · Week · Streak)
+│   │   │   ├── WeekAndStreakCards.tsx     # Double cards with 7 slanted bars (Week & Streak)
+│   │   │   ├── RoutinrHabitCard.tsx       # Exact Routinr habit card with check toggle & tags
+│   │   │   ├── BeautifulHabitIcon.tsx     # High-fidelity custom SVG & vector habit glyphs
+│   │   │   ├── AddHabitModal.tsx          # New habit creation modal
+│   │   │   ├── HabitActionSheet.tsx       # Habit action bottom sheet modal
+│   │   │   ├── HabitCardList.tsx          # Single-column habit card with striped bar
+│   │   │   ├── HabitCardDual.tsx          # 2-column compact habit card
+│   │   │   └── HabitCardGrid.tsx          # 4-column compact habit card
 │   │   ├── stats/
 │   │   │   ├── ConsistencyChart.tsx  # Daily vertical bar chart series
 │   │   │   ├── StatsMetricCards.tsx  # 2x2 metric tiles (Consistency, Done, Missed, Run)
