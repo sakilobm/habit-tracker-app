@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import Svg, { Path } from 'react-native-svg';
+import Svg, { Path, Line } from 'react-native-svg';
 
 const { width } = Dimensions.get('window');
 
@@ -12,20 +12,18 @@ interface CustomTabBarProps {
   };
   descriptors: Record<string, { options: { title?: string } }>;
   navigation?: any;
-  emitter?: any;
   navigateToTab?: (routeKey: string) => void;
   onOpenAddHabit: () => void;
 }
 
 /**
- * Custom Tab Bar with Raised Notched Center Button
- * Matches Routinr's signature elevated + button and clean dock tabs.
+ * Custom Tab Bar with Floating Hexagon Center Button & Clear Notched Air-Gap
+ * Matches Routinr's signature hexagon floating + button with visible gap around it.
  */
 export const CustomTabBar: React.FC<CustomTabBarProps> = ({
   state,
   descriptors,
   navigation,
-  emitter,
   navigateToTab,
   onOpenAddHabit,
 }) => {
@@ -37,38 +35,79 @@ export const CustomTabBar: React.FC<CustomTabBarProps> = ({
   };
 
   const centerIndex = 2; // Split 2 tabs on left, 2 tabs on right
+  const cx = width / 2;
 
   return (
-    <View style={styles.container}>
-      {/* SVG Notched Background */}
-      <Svg width={width} height={70} style={StyleSheet.absoluteFill}>
+    <View style={styles.container} pointerEvents="box-none">
+      {/* SVG Notched Background with Deep Smooth Scoop for Air-Gap */}
+      <Svg width={width} height={75} style={StyleSheet.absoluteFill} pointerEvents="none">
         <Path
           d={`
-            M0,0
-            L${width / 2 - 44},0
-            C${width / 2 - 32},0 ${width / 2 - 28},24 ${width / 2},24
-            C${width / 2 + 28},24 ${width / 2 + 32},0 ${width / 2 + 44},0
-            L${width},0
-            L${width},70
-            L0,70
+            M 0 0
+            L ${cx - 52} 0
+            C ${cx - 38} 0, ${cx - 36} 36, ${cx} 36
+            C ${cx + 36} 36, ${cx + 38} 0, ${cx + 52} 0
+            L ${width} 0
+            L ${width} 75
+            L 0 75
             Z
           `}
           fill="#FFFFFF"
         />
       </Svg>
 
-      {/* Floating Center + Action Button */}
+      {/* Floating Rounded Hexagon + Action Button with Clear Air-Gap */}
       <View style={styles.centerButtonWrapper}>
         <TouchableOpacity
-          style={styles.centerButton}
           onPress={onOpenAddHabit}
           activeOpacity={0.85}
+          style={styles.hexagonTouchable}
         >
-          <Ionicons name="add" size={28} color="#FFFFFF" />
+          <Svg width={58} height={54} viewBox="0 0 58 52">
+            {/* Rounded Flat-Topped Hexagon */}
+            <Path
+              d="
+                M 19 2
+                L 39 2
+                Q 45 2 48 7
+                L 55 21
+                Q 58 26 55 31
+                L 48 45
+                Q 45 50 39 50
+                L 19 50
+                Q 13 50 10 45
+                L 3 31
+                Q 0 26 3 21
+                L 10 7
+                Q 13 2 19 2
+                Z
+              "
+              fill="#7C83FD"
+            />
+            {/* White Crisp Plus (+) Symbol */}
+            <Line
+              x1="29"
+              y1="16"
+              x2="29"
+              y2="36"
+              stroke="#FFFFFF"
+              strokeWidth="2.8"
+              strokeLinecap="round"
+            />
+            <Line
+              x1="19"
+              y1="26"
+              x2="39"
+              y2="26"
+              stroke="#FFFFFF"
+              strokeWidth="2.8"
+              strokeLinecap="round"
+            />
+          </Svg>
         </TouchableOpacity>
       </View>
 
-      {/* Tab Items */}
+      {/* Tab Navigation Items */}
       <View style={styles.tabsRow}>
         {state.routes.map((route, index: number) => {
           const isFocused = state.index === index;
@@ -97,7 +136,7 @@ export const CustomTabBar: React.FC<CustomTabBarProps> = ({
 
           return (
             <React.Fragment key={route.key}>
-              {/* Insert space in middle for floating center button */}
+              {/* Center Spacer to allow room for the floating hexagon and air-gap */}
               {index === centerIndex && <View style={styles.centerSpacer} />}
 
               <TouchableOpacity
@@ -130,36 +169,34 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: 70,
+    height: 72,
     backgroundColor: 'transparent',
-    borderTopWidth: 1,
-    borderTopColor: '#F1F5F9',
-    elevation: 8,
+    elevation: 10,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.06,
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.05,
     shadowRadius: 8,
   },
   centerButtonWrapper: {
     position: 'absolute',
     top: -24,
-    left: width / 2 - 28,
-    width: 56,
-    height: 56,
-    zIndex: 10,
-  },
-  centerButton: {
-    width: 56,
-    height: 56,
-    borderRadius: 20,
-    backgroundColor: '#6366F1',
-    justifyContent: 'center',
+    left: width / 2 - 29,
+    width: 58,
+    height: 54,
+    zIndex: 20,
     alignItems: 'center',
+    justifyContent: 'center',
     shadowColor: '#6366F1',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  hexagonTouchable: {
+    width: 58,
+    height: 54,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   tabsRow: {
     flexDirection: 'row',
@@ -172,13 +209,13 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: 6,
+    paddingTop: 8,
   },
   centerSpacer: {
-    width: 64,
+    width: 72, // Generous space for hexagon + surrounding air-gap
   },
   iconWrapper: {
-    padding: 2,
+    padding: 3,
     borderRadius: 12,
   },
   iconWrapperActive: {

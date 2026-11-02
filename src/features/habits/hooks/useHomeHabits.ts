@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useCallback } from 'react';
+import { useEffect, useMemo, useCallback, useState } from 'react';
+import { NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useHabitStore } from '../stores/habitStore';
 import { HabitLayoutMode, HabitWithStatus } from '../../../types/habit';
@@ -6,7 +7,7 @@ import { HabitLayoutMode, HabitWithStatus } from '../../../types/habit';
 /**
  * Headless Hook: Home Screen Habit Management & Layout State
  * Encapsulates view switching, routine filtering, completion toggles,
- * hemicycle percentage calculations, and device haptics.
+ * hemicycle percentage calculations, scroll collapse states, and device haptics.
  */
 export function useHomeHabits() {
   const {
@@ -23,9 +24,23 @@ export function useHomeHabits() {
     closeHabitSheet,
   } = useHabitStore();
 
+  const [isScrolled, setIsScrolled] = useState(false);
+
   useEffect(() => {
     initialize();
   }, [initialize]);
+
+  const handleScroll = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const offsetY = event.nativeEvent.contentOffset.y;
+      if (offsetY > 25 && !isScrolled) {
+        setIsScrolled(true);
+      } else if (offsetY <= 25 && isScrolled) {
+        setIsScrolled(false);
+      }
+    },
+    [isScrolled]
+  );
 
   const handleToggleHabit = useCallback(
     (habitId: string) => {
@@ -76,11 +91,13 @@ export function useHomeHabits() {
     layoutMode,
     selectedDate,
     activeHabitForSheet,
+    isScrolled,
     completedCount,
     totalCount,
     completionPercentage,
     streakDays,
     weekAverage,
+    handleScroll,
     handleToggleHabit,
     handleSelectLayout,
     handleOpenSheet,

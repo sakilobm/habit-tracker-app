@@ -1,29 +1,35 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import Svg, { Rect, Path } from 'react-native-svg';
+import Svg, { Rect, Path, Line } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { HabitLayoutMode } from '../../types/habit';
 import { format, startOfWeek, addDays } from 'date-fns';
+
+const { width } = Dimensions.get('window');
 
 interface HomeHeaderWithCalendarProps {
   currentLayout: HabitLayoutMode;
   onSelectLayout: (mode: HabitLayoutMode) => void;
   selectedDate: string; // YYYY-MM-DD
   onSelectDate: (dateStr: string) => void;
+  isScrolled?: boolean;
   onPressProfile?: () => void;
   onOpenCalendar?: () => void;
 }
 
 /**
- * Routinr Signature Top Header with Weekly Ribbon & 3-Way Switcher
- * (Exact pixel match to Routinr Home Screen Screenshots 1 & 2)
+ * Routinr Signature Top Header with Dynamic Scroll Collapse & Organic Wave Bottom Curve
+ * - When at top: Full header with weekly ribbon, avatar, name, and 3-way layout switcher.
+ * - When scrolling down: Dates collapse/hide ("dates hide airum"), name fades, leaving
+ *   a sticky organic wave curve separating top and bottom ("mela part and keel part separate ah irukum").
  */
 export const HomeHeaderWithCalendar: React.FC<HomeHeaderWithCalendarProps> = ({
   currentLayout,
   onSelectLayout,
   selectedDate,
   onSelectDate,
+  isScrolled = false,
   onPressProfile,
   onOpenCalendar,
 }) => {
@@ -45,15 +51,46 @@ export const HomeHeaderWithCalendar: React.FC<HomeHeaderWithCalendarProps> = ({
     };
   });
 
+  const cx = width / 2;
+
   return (
     <View style={styles.outerWrapper}>
       {/* Main Lavender Header Card */}
       <View
         style={[
           styles.headerContainer,
-          { paddingTop: Math.max(insets.top, 20) + 10 },
+          {
+            paddingTop: Math.max(insets.top, 20) + 6,
+            paddingBottom: isScrolled ? 10 : 26,
+          },
         ]}
       >
+        {/* Subtle Decorative Background Grid */}
+        <Svg width={width} height={160} style={StyleSheet.absoluteFill} pointerEvents="none">
+          {[40, 80, 120, 160, 200, 240, 280, 320, 360].map((x) => (
+            <Line
+              key={`v-${x}`}
+              x1={x}
+              y1={0}
+              x2={x}
+              y2={160}
+              stroke="rgba(255, 255, 255, 0.08)"
+              strokeWidth={1}
+            />
+          ))}
+          {[30, 60, 90, 120, 150].map((y) => (
+            <Line
+              key={`h-${y}`}
+              x1={0}
+              y1={y}
+              x2={width}
+              y2={y}
+              stroke="rgba(255, 255, 255, 0.08)"
+              strokeWidth={1}
+            />
+          ))}
+        </Svg>
+
         {/* Top Bar: Avatar, Name, Calendar Button */}
         <View style={styles.topBar}>
           <TouchableOpacity
@@ -66,7 +103,7 @@ export const HomeHeaderWithCalendar: React.FC<HomeHeaderWithCalendarProps> = ({
                 <Ionicons name="person" size={18} color="#FFFFFF" />
               </View>
             </View>
-            <Text style={styles.profileName}>Sakil obm</Text>
+            {!isScrolled && <Text style={styles.profileName}>Sakil obm</Text>}
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -78,50 +115,69 @@ export const HomeHeaderWithCalendar: React.FC<HomeHeaderWithCalendarProps> = ({
           </TouchableOpacity>
         </View>
 
-        {/* Horizontal 7-Day Weekly Ribbon */}
-        <View style={styles.ribbonRow}>
-          {weekDays.map((day) => (
-            <TouchableOpacity
-              key={day.dateStr}
-              style={[styles.dayPill, day.isSelected && styles.dayPillSelected]}
-              onPress={() => onSelectDate(day.dateStr)}
-              activeOpacity={0.7}
-            >
-              <Text
-                style={[
-                  styles.dayName,
-                  day.isSelected && styles.dayNameSelected,
-                ]}
-              >
-                {day.name}
-              </Text>
-              <View
-                style={[
-                  styles.dateCircle,
-                  day.isSelected && styles.dateCircleSelected,
-                ]}
+        {/* Horizontal 7-Day Weekly Ribbon - Collapses / Hides on Scroll */}
+        {!isScrolled && (
+          <View style={styles.ribbonRow}>
+            {weekDays.map((day) => (
+              <TouchableOpacity
+                key={day.dateStr}
+                style={[styles.dayPill, day.isSelected && styles.dayPillSelected]}
+                onPress={() => onSelectDate(day.dateStr)}
+                activeOpacity={0.7}
               >
                 <Text
                   style={[
-                    styles.dateNum,
-                    day.isSelected && styles.dateNumSelected,
+                    styles.dayName,
+                    day.isSelected && styles.dayNameSelected,
                   ]}
                 >
-                  {day.number}
+                  {day.name}
                 </Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* Center Curved Tongue Dips Downward */}
-        <View style={styles.bottomCurveTongue} />
+                <View
+                  style={[
+                    styles.dateCircle,
+                    day.isSelected && styles.dateCircleSelected,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.dateNum,
+                      day.isSelected && styles.dateNumSelected,
+                    ]}
+                  >
+                    {day.number}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
       </View>
 
-      {/* 3-Segment View Switcher Placed inside the bottom curve */}
+      {/* SVG Organic Wave Bottom Boundary (Exact match to Screenshot 6) */}
+      <View style={styles.waveSvgContainer}>
+        <Svg width={width} height={34} viewBox={`0 0 ${width} 34`}>
+          <Path
+            d={`
+              M 0 0
+              L 0 10
+              C ${cx - 140} 10, ${cx - 120} 2, ${cx - 105} 2
+              C ${cx - 95} 2, ${cx - 90} 26, ${cx - 70} 26
+              L ${cx + 70} 26
+              C ${cx + 90} 26, ${cx + 95} 2, ${cx + 105} 2
+              C ${cx + 120} 2, ${cx + 140} 10, ${width} 10
+              L ${width} 0
+              Z
+            `}
+            fill="#7C83FD"
+          />
+        </Svg>
+      </View>
+
+      {/* 3-Segment View Switcher Centered in the Wave Pod */}
       <View style={styles.switcherWrapper}>
         <View style={styles.segmentContainer}>
-          {/* List Layout Button [ ▭ ] */}
+          {/* Button 1: Single-Line Compact List [ ▭ ] */}
           <TouchableOpacity
             style={[
               styles.segmentBtn,
@@ -152,7 +208,7 @@ export const HomeHeaderWithCalendar: React.FC<HomeHeaderWithCalendarProps> = ({
             </Svg>
           </TouchableOpacity>
 
-          {/* Dual Layout Button [ ◫ ] */}
+          {/* Button 2: Weekly Mini-Calendar View [ ▯ ▯ ] */}
           <TouchableOpacity
             style={[
               styles.segmentBtn,
@@ -183,7 +239,7 @@ export const HomeHeaderWithCalendar: React.FC<HomeHeaderWithCalendarProps> = ({
             </Svg>
           </TouchableOpacity>
 
-          {/* Grid Layout Button [ ⊞ ] */}
+          {/* Button 3: Grid View [ ⊞ ] */}
           <TouchableOpacity
             style={[
               styles.segmentBtn,
@@ -244,34 +300,20 @@ const styles = StyleSheet.create({
     zIndex: 20,
   },
   headerContainer: {
-    backgroundColor: '#7C83FD', // Vibrant Periwinkle Lavender matching screenshot
-    borderBottomLeftRadius: 32,
-    borderBottomRightRadius: 32,
+    backgroundColor: '#7C83FD', // Vibrant Periwinkle Lavender
     paddingHorizontal: 16,
-    paddingBottom: 28,
     position: 'relative',
-    shadowColor: '#6366F1',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.18,
-    shadowRadius: 10,
-    elevation: 5,
   },
-  bottomCurveTongue: {
-    position: 'absolute',
-    bottom: -18,
-    alignSelf: 'center',
-    width: 200,
-    height: 36,
-    backgroundColor: '#7C83FD',
-    borderBottomLeftRadius: 28,
-    borderBottomRightRadius: 28,
-    zIndex: 1,
+  waveSvgContainer: {
+    marginTop: -1,
+    width: width,
+    height: 34,
   },
   topBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 16,
+    marginBottom: 14,
   },
   profileRow: {
     flexDirection: 'row',
@@ -365,11 +407,11 @@ const styles = StyleSheet.create({
   },
   switcherWrapper: {
     position: 'absolute',
-    bottom: -15,
+    bottom: -6,
     left: 0,
     right: 0,
     alignItems: 'center',
-    zIndex: 10,
+    zIndex: 30,
   },
   segmentContainer: {
     flexDirection: 'row',
@@ -381,7 +423,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.12,
     shadowRadius: 5,
-    elevation: 3,
+    elevation: 4,
   },
   segmentBtn: {
     paddingHorizontal: 16,

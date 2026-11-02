@@ -12,8 +12,9 @@ import { useHomeHabits } from '../../features/habits/hooks/useHomeHabits';
 
 /**
  * Home View Shell (Declarative, < 150 lines)
- * Features Routinr curved lavender header with 7-day ribbon, 3-way layout switcher,
- * dotted hemicycle fan arc gauge, week/streak cards, and signature habit cards.
+ * Features Routinr curved lavender header with 7-day ribbon, scroll collapse,
+ * 3-way layout switcher, dotted hemicycle fan arc gauge, week/streak cards,
+ * and signature habit cards.
  */
 export default function HomeScreen() {
   const router = useRouter();
@@ -22,9 +23,11 @@ export default function HomeScreen() {
     layoutMode,
     selectedDate,
     activeHabitForSheet,
+    isScrolled,
     completionPercentage,
     streakDays,
     weekAverage,
+    handleScroll,
     handleToggleHabit,
     handleSelectLayout,
     handleOpenSheet,
@@ -34,11 +37,13 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Dynamic Curved Lavender Header with Organic Wave & Scroll Collapse */}
       <HomeHeaderWithCalendar
         currentLayout={layoutMode}
         onSelectLayout={handleSelectLayout}
         selectedDate={selectedDate}
         onSelectDate={setSelectedDate}
+        isScrolled={isScrolled}
         onPressProfile={() => router.push('/profile')}
         onOpenCalendar={() => {}}
       />
@@ -46,6 +51,8 @@ export default function HomeScreen() {
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
       >
         {/* Hemicycle Dotted Fan Arc Gauge */}
         <DottedFanArc percentage={completionPercentage} />
@@ -57,7 +64,7 @@ export default function HomeScreen() {
           streakTarget={3}
         />
 
-        {/* Habit Cards by Layout Mode */}
+        {/* Layout Mode 1: Compact List [ ▭ ] */}
         {layoutMode === 'list' && (
           <View style={styles.listContainer}>
             {habits.map((habit) => (
@@ -71,8 +78,9 @@ export default function HomeScreen() {
           </View>
         )}
 
+        {/* Layout Mode 2: Weekly Mini-Calendar View [ ▯ ▯ ] */}
         {layoutMode === 'dual' && (
-          <View style={styles.dualContainer}>
+          <View style={styles.listContainer}>
             {habits.map((habit) => (
               <HabitCardDual
                 key={habit.id}
@@ -84,6 +92,7 @@ export default function HomeScreen() {
           </View>
         )}
 
+        {/* Layout Mode 3: 3-Column Compact Grid [ ⊞ ] */}
         {layoutMode === 'grid' && (
           <View style={styles.gridContainer}>
             {habits.map((habit) => (
@@ -116,17 +125,11 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 16,
-    paddingTop: 24,
-    paddingBottom: 110,
+    paddingTop: 16,
+    paddingBottom: 130, // Ample clearance for the floating hexagon tab bar
     backgroundColor: '#FFFFFF',
   },
   listContainer: {
-    marginTop: 6,
-  },
-  dualContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginHorizontal: -6,
     marginTop: 6,
   },
   gridContainer: {
