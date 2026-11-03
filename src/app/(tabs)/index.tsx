@@ -11,10 +11,9 @@ import { HabitActionSheet } from '../../components/home/HabitActionSheet';
 import { useHomeHabits } from '../../features/habits/hooks/useHomeHabits';
 
 /**
- * Home View Shell (Declarative, < 150 lines)
- * Features Routinr curved lavender header with 7-day ribbon, continuous scroll collapse,
- * 3-way layout switcher, dotted hemicycle fan arc gauge, week/streak cards,
- * and signature habit cards.
+ * Declarative Home View Shell (< 150 lines)
+ * Hosts signature curved lavender header, hemicycle fan arc, week & streak cards,
+ * and 3 layout variants (compact list, dual mini-tracker, and grid).
  */
 export default function HomeScreen() {
   const router = useRouter();
@@ -37,36 +36,29 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      {/* 1. Underlying ScrollView: Fixed Frame, Zero Layout Thrashing */}
       <Animated.ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         onScroll={handleScroll}
         scrollEventThrottle={16}
-        overScrollMode="never"
         alwaysBounceVertical={true}
+        bounces={true}
       >
-        {/* Top Spacer matches header resting height with breathing room */}
         <View style={styles.topSpacer} />
-
-        {/* Hemicycle Dotted Fan Arc Gauge */}
         <DottedFanArc percentage={completionPercentage} />
-
-        {/* This Week & Streak Momentum Cards */}
         <WeekAndStreakCards
           weekAverage={weekAverage}
           streakDays={streakDays}
           streakTarget={3}
         />
 
-        {/* Layout Mode 1: Compact List [ ▭ ] */}
         {layoutMode === 'list' && (
           <View style={styles.listContainer}>
-            {habits.map((habit) => (
+            {habits.map((h) => (
               <RoutinrHabitCard
-                key={habit.id}
-                habit={habit}
+                key={h.id}
+                habit={h}
                 onPress={handleOpenSheet}
                 onToggle={handleToggleHabit}
               />
@@ -74,13 +66,12 @@ export default function HomeScreen() {
           </View>
         )}
 
-        {/* Layout Mode 2: Weekly Mini-Calendar View [ ▯ ▯ ] */}
         {layoutMode === 'dual' && (
           <View style={styles.listContainer}>
-            {habits.map((habit) => (
+            {habits.map((h) => (
               <HabitCardDual
-                key={habit.id}
-                habit={habit}
+                key={h.id}
+                habit={h}
                 onPress={handleOpenSheet}
                 onToggle={handleToggleHabit}
               />
@@ -88,13 +79,12 @@ export default function HomeScreen() {
           </View>
         )}
 
-        {/* Layout Mode 3: 3-Column Compact Grid [ ⊞ ] */}
         {layoutMode === 'grid' && (
           <View style={styles.gridContainer}>
-            {habits.map((habit) => (
+            {habits.map((h) => (
               <HabitCardGrid
-                key={habit.id}
-                habit={habit}
+                key={h.id}
+                habit={h}
                 onPress={handleOpenSheet}
                 onToggle={handleToggleHabit}
               />
@@ -103,7 +93,6 @@ export default function HomeScreen() {
         )}
       </Animated.ScrollView>
 
-      {/* 2. Floating Header Overlay (100% Flicker-Free) */}
       <HomeHeaderWithCalendar
         currentLayout={layoutMode}
         onSelectLayout={handleSelectLayout}
@@ -114,7 +103,6 @@ export default function HomeScreen() {
         onOpenCalendar={() => {}}
       />
 
-      {/* Action Bottom Sheet */}
       <HabitActionSheet
         habit={activeHabitForSheet}
         visible={Boolean(activeHabitForSheet)}
@@ -134,12 +122,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   topSpacer: {
-    height: 218,
+    height: 220,
   },
   scrollContent: {
     paddingHorizontal: 16,
-    paddingTop: 10,
-    paddingBottom: 220, // Ample clearance to guarantee smooth scrolling in all views
+    paddingTop: 8,
+    paddingBottom: 240,
     backgroundColor: '#FFFFFF',
   },
   listContainer: {

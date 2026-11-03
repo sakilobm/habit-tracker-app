@@ -8,21 +8,16 @@ export function seedInitialHabitsIfNeeded(): void {
   const existingHabits = habitRepository.getAllHabits();
   const hasRoutinrHabits = existingHabits.some((h) => h.id === 'habit_put_thoughts_paper');
 
-  if (hasRoutinrHabits && existingHabits.length >= 3) return;
-
-  // Clean out older seed habits to ensure exact match to screenshot
-  for (const habit of existingHabits) {
-    if (!habit.id.startsWith('habit_put_') && !habit.id.startsWith('habit_reset_') && !habit.id.startsWith('habit_notice_')) {
-      habitRepository.deleteHabit(habit.id);
-    }
-  }
+  if (hasRoutinrHabits && existingHabits.length >= 5) return;
 
   const todayStr = format(new Date(), 'yyyy-MM-dd');
 
-  // Exact 3 habits from user's latest screenshots:
+  // Exact habits from Routinr:
   // 1. Put thoughts on paper
   // 2. Reset your desk
   // 3. Notice one good thing
+  // 4. Drink 2L of fresh water
+  // 5. Evening quiet reading
 
   if (!existingHabits.some((h) => h.id === 'habit_put_thoughts_paper')) {
     habitRepository.insertHabit({
@@ -71,7 +66,6 @@ export function seedInitialHabitsIfNeeded(): void {
       createdAt: new Date().toISOString(),
     });
 
-    // Mark 1 of 3 completed to showcase 33% exactly like screenshot 2
     habitRepository.setHabitStatus(
       'habit_notice_good_thing',
       todayStr,
@@ -79,5 +73,37 @@ export function seedInitialHabitsIfNeeded(): void {
       1,
       'Noticed peaceful evening breeze.'
     );
+  }
+
+  if (!existingHabits.some((h) => h.id === 'habit_hydrate_water')) {
+    habitRepository.insertHabit({
+      id: 'habit_hydrate_water',
+      title: 'Drink 2L fresh water',
+      description: 'Keep your hydration levels high throughout the workday.',
+      icon: 'water-outline',
+      category: 'health',
+      timeOfDay: 'anytime',
+      frequencyType: 'every_day',
+      frequencyDays: [1, 2, 3, 4, 5, 6, 7],
+      targetCount: 2,
+      unit: 'liters',
+      createdAt: new Date().toISOString(),
+    });
+  }
+
+  if (!existingHabits.some((h) => h.id === 'habit_quiet_reading')) {
+    habitRepository.insertHabit({
+      id: 'habit_quiet_reading',
+      title: 'Evening quiet reading',
+      description: 'Read 15 pages of non-fiction before winding down for sleep.',
+      icon: 'reader-outline',
+      category: 'mindfulness',
+      timeOfDay: 'evening',
+      frequencyType: 'every_day',
+      frequencyDays: [1, 2, 3, 4, 5, 6, 7],
+      targetCount: 1,
+      unit: 'time',
+      createdAt: new Date().toISOString(),
+    });
   }
 }
