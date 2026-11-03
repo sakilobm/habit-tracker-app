@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import React, { useRef } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Rect, Path, Line } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -13,23 +13,23 @@ interface HomeHeaderWithCalendarProps {
   onSelectLayout: (mode: HabitLayoutMode) => void;
   selectedDate: string; // YYYY-MM-DD
   onSelectDate: (dateStr: string) => void;
-  isScrolled?: boolean;
+  scrollY?: Animated.Value;
   onPressProfile?: () => void;
   onOpenCalendar?: () => void;
 }
 
 /**
- * Routinr Signature Top Header with Dynamic Scroll Collapse & Organic Wave Bottom Curve
- * - When at top: Full header with weekly ribbon, avatar, name, and 3-way layout switcher.
- * - When scrolling down: Dates collapse/hide ("dates hide airum"), name fades, leaving
- *   a sticky organic wave curve separating top and bottom ("mela part and keel part separate ah irukum").
+ * Routinr Signature Top Header with Continuous Animated Scroll Collapse & Organic Wave Bottom Curve
+ * - 0 to 50px scroll: 7-day ribbon smoothly and continuously collapses in height and fades in opacity.
+ * - Profile name "Sakil obm" smoothly fades out, keeping the avatar and calendar icons aligned.
+ * - Organic wave bottom boundary separates the header and content with zero flicker.
  */
 export const HomeHeaderWithCalendar: React.FC<HomeHeaderWithCalendarProps> = ({
   currentLayout,
   onSelectLayout,
   selectedDate,
   onSelectDate,
-  isScrolled = false,
+  scrollY,
   onPressProfile,
   onOpenCalendar,
 }) => {
@@ -51,17 +51,45 @@ export const HomeHeaderWithCalendar: React.FC<HomeHeaderWithCalendarProps> = ({
     };
   });
 
+  const fallbackScrollY = useRef(new Animated.Value(0)).current;
+  const effectiveScrollY = scrollY || fallbackScrollY;
+
+  // Continuous interpolation curves: Zero flicker, 60fps native performance
+  const ribbonHeight = effectiveScrollY.interpolate({
+    inputRange: [0, 50],
+    outputRange: [64, 0],
+    extrapolate: 'clamp',
+  });
+
+  const ribbonOpacity = effectiveScrollY.interpolate({
+    inputRange: [0, 35],
+    outputRange: [1, 0],
+    extrapolate: 'clamp',
+  });
+
+  const nameOpacity = effectiveScrollY.interpolate({
+    inputRange: [0, 25],
+    outputRange: [1, 0],
+    extrapolate: 'clamp',
+  });
+
+  const headerPaddingBottom = effectiveScrollY.interpolate({
+    inputRange: [0, 50],
+    outputRange: [24, 8],
+    extrapolate: 'clamp',
+  });
+
   const cx = width / 2;
 
   return (
     <View style={styles.outerWrapper}>
       {/* Main Lavender Header Card */}
-      <View
+      <Animated.View
         style={[
           styles.headerContainer,
           {
             paddingTop: Math.max(insets.top, 20) + 6,
-            paddingBottom: isScrolled ? 10 : 26,
+            paddingBottom: headerPaddingBottom,
           },
         ]}
       >
@@ -103,7 +131,17 @@ export const HomeHeaderWithCalendar: React.FC<HomeHeaderWithCalendarProps> = ({
                 <Ionicons name="person" size={18} color="#FFFFFF" />
               </View>
             </View>
-            {!isScrolled && <Text style={styles.profileName}>Sakil obm</Text>}
+            <Animated.Text
+              style={[
+                styles.profileName,
+                {
+                  opacity: nameOpacity,
+                },
+              ]}
+              numberOfLines={1}
+            >
+              Sakil obm
+            </Animated.Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -115,8 +153,16 @@ export const HomeHeaderWithCalendar: React.FC<HomeHeaderWithCalendarProps> = ({
           </TouchableOpacity>
         </View>
 
-        {/* Horizontal 7-Day Weekly Ribbon - Collapses / Hides on Scroll */}
-        {!isScrolled && (
+        {/* Horizontal 7-Day Weekly Ribbon - Smooth Continuous Collapse */}
+        <Animated.View
+          style={[
+            styles.ribbonWrapper,
+            {
+              height: ribbonHeight,
+              opacity: ribbonOpacity,
+            },
+          ]}
+        >
           <View style={styles.ribbonRow}>
             {weekDays.map((day) => (
               <TouchableOpacity
@@ -151,10 +197,10 @@ export const HomeHeaderWithCalendar: React.FC<HomeHeaderWithCalendarProps> = ({
               </TouchableOpacity>
             ))}
           </View>
-        )}
-      </View>
+        </Animated.View>
+      </Animated.View>
 
-      {/* SVG Organic Wave Bottom Boundary (Exact match to Screenshot 6) */}
+      {/* SVG Organic Wave Bottom Boundary */}
       <View style={styles.waveSvgContainer}>
         <Svg width={width} height={34} viewBox={`0 0 ${width} 34`}>
           <Path
@@ -313,7 +359,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 14,
+    marginBottom: 10,
   },
   profileRow: {
     flexDirection: 'row',
@@ -352,10 +398,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  ribbonWrapper: {
+    overflow: 'hidden',
+    width: '100%',
+  },
   ribbonRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 4,
+    paddingBottom: 4,
   },
   dayPill: {
     flex: 1,
@@ -433,7 +483,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   segmentBtnActive: {
-    backgroundColor: '#6366F1', // Deep vibrant purple active matching screenshot
+    backgroundColor: '#6366F1',
     shadowColor: '#6366F1',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.35,

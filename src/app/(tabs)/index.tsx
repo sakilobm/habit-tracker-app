@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
+import { View, StyleSheet, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
 import { HomeHeaderWithCalendar } from '../../components/home/HomeHeaderWithCalendar';
 import { DottedFanArc } from '../../components/home/DottedFanArc';
@@ -12,7 +12,7 @@ import { useHomeHabits } from '../../features/habits/hooks/useHomeHabits';
 
 /**
  * Home View Shell (Declarative, < 150 lines)
- * Features Routinr curved lavender header with 7-day ribbon, scroll collapse,
+ * Features Routinr curved lavender header with 7-day ribbon, continuous scroll collapse,
  * 3-way layout switcher, dotted hemicycle fan arc gauge, week/streak cards,
  * and signature habit cards.
  */
@@ -23,7 +23,7 @@ export default function HomeScreen() {
     layoutMode,
     selectedDate,
     activeHabitForSheet,
-    isScrolled,
+    scrollY,
     completionPercentage,
     streakDays,
     weekAverage,
@@ -37,22 +37,24 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Dynamic Curved Lavender Header with Organic Wave & Scroll Collapse */}
+      {/* Dynamic Curved Lavender Header with Organic Wave & Continuous Scroll Collapse */}
       <HomeHeaderWithCalendar
         currentLayout={layoutMode}
         onSelectLayout={handleSelectLayout}
         selectedDate={selectedDate}
         onSelectDate={setSelectedDate}
-        isScrolled={isScrolled}
+        scrollY={scrollY}
         onPressProfile={() => router.push('/profile')}
         onOpenCalendar={() => {}}
       />
 
-      <ScrollView
+      <Animated.ScrollView
+        style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         onScroll={handleScroll}
         scrollEventThrottle={16}
+        overScrollMode="never"
       >
         {/* Hemicycle Dotted Fan Arc Gauge */}
         <DottedFanArc percentage={completionPercentage} />
@@ -105,7 +107,7 @@ export default function HomeScreen() {
             ))}
           </View>
         )}
-      </ScrollView>
+      </Animated.ScrollView>
 
       {/* Action Bottom Sheet */}
       <HabitActionSheet
@@ -122,6 +124,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
+  },
+  scrollView: {
+    flex: 1,
   },
   scrollContent: {
     paddingHorizontal: 16,

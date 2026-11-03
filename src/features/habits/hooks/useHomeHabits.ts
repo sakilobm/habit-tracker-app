@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useCallback, useState } from 'react';
-import { NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
+import { useEffect, useMemo, useCallback, useRef } from 'react';
+import { Animated } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useHabitStore } from '../stores/habitStore';
 import { HabitLayoutMode, HabitWithStatus } from '../../../types/habit';
@@ -7,7 +7,7 @@ import { HabitLayoutMode, HabitWithStatus } from '../../../types/habit';
 /**
  * Headless Hook: Home Screen Habit Management & Layout State
  * Encapsulates view switching, routine filtering, completion toggles,
- * hemicycle percentage calculations, scroll collapse states, and device haptics.
+ * hemicycle percentage calculations, continuous scroll animation value, and device haptics.
  */
 export function useHomeHabits() {
   const {
@@ -24,22 +24,20 @@ export function useHomeHabits() {
     closeHabitSheet,
   } = useHabitStore();
 
-  const [isScrolled, setIsScrolled] = useState(false);
+  // Continuous Animated.Value for 60/120 FPS buttery-smooth scroll collapse with ZERO flicker
+  const scrollY = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     initialize();
   }, [initialize]);
 
-  const handleScroll = useCallback(
-    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-      const offsetY = event.nativeEvent.contentOffset.y;
-      if (offsetY > 25 && !isScrolled) {
-        setIsScrolled(true);
-      } else if (offsetY <= 25 && isScrolled) {
-        setIsScrolled(false);
-      }
-    },
-    [isScrolled]
+  const handleScroll = useMemo(
+    () =>
+      Animated.event(
+        [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+        { useNativeDriver: false }
+      ),
+    [scrollY]
   );
 
   const handleToggleHabit = useCallback(
@@ -91,7 +89,7 @@ export function useHomeHabits() {
     layoutMode,
     selectedDate,
     activeHabitForSheet,
-    isScrolled,
+    scrollY,
     completedCount,
     totalCount,
     completionPercentage,
