@@ -19,10 +19,10 @@ interface HomeHeaderWithCalendarProps {
 }
 
 /**
- * Routinr Signature Top Header with Continuous Animated Scroll Collapse & Organic Wave Bottom Curve
- * - 0 to 50px scroll: 7-day ribbon smoothly and continuously collapses in height and fades in opacity.
- * - Profile name "Sakil obm" smoothly fades out, keeping the avatar and calendar icons aligned.
- * - Organic wave bottom boundary separates the header and content with zero flicker.
+ * Routinr Signature Top Header with Layered Wave Boundary & 100% Flicker-Free Sticky Overlay
+ * - Fixed/Absolute top overlay (never resizes or displaces the ScrollView).
+ * - Multi-layered curve boundary: Lavender fill, grey contour gap line, and clean white boundary.
+ * - Continuous smooth collapse of weekly ribbon (64 -> 0px) and profile name on scroll.
  */
 export const HomeHeaderWithCalendar: React.FC<HomeHeaderWithCalendarProps> = ({
   currentLayout,
@@ -54,7 +54,7 @@ export const HomeHeaderWithCalendar: React.FC<HomeHeaderWithCalendarProps> = ({
   const fallbackScrollY = useRef(new Animated.Value(0)).current;
   const effectiveScrollY = scrollY || fallbackScrollY;
 
-  // Continuous interpolation curves: Zero flicker, 60fps native performance
+  // Continuous interpolation: Zero re-renders, 60/120fps native performance
   const ribbonHeight = effectiveScrollY.interpolate({
     inputRange: [0, 50],
     outputRange: [64, 0],
@@ -73,40 +73,56 @@ export const HomeHeaderWithCalendar: React.FC<HomeHeaderWithCalendarProps> = ({
     extrapolate: 'clamp',
   });
 
-  const headerPaddingBottom = effectiveScrollY.interpolate({
-    inputRange: [0, 50],
-    outputRange: [24, 8],
-    extrapolate: 'clamp',
-  });
-
   const cx = width / 2;
 
+  // Exact curve matching user's screenshot (media_1793711745911_ad068c57.jpg)
+  const waveFillPath = `
+    M 0 0
+    L 0 12
+    C ${cx - 150} 12, ${cx - 135} 12, ${cx - 122} 22
+    C ${cx - 110} 30, ${cx - 105} 44, ${cx - 86} 44
+    L ${cx + 86} 44
+    C ${cx + 105} 44, ${cx + 110} 30, ${cx + 122} 22
+    C ${cx + 135} 12, ${cx + 150} 12, ${width} 12
+    L ${width} 0
+    Z
+  `;
+
+  // Grey contour curve outline matching screenshot
+  const waveContourPath = `
+    M 0 12
+    C ${cx - 150} 12, ${cx - 135} 12, ${cx - 122} 22
+    C ${cx - 110} 30, ${cx - 105} 44, ${cx - 86} 44
+    L ${cx + 86} 44
+    C ${cx + 105} 44, ${cx + 110} 30, ${cx + 122} 22
+    C ${cx + 135} 12, ${cx + 150} 12, ${width} 12
+  `;
+
   return (
-    <View style={styles.outerWrapper}>
+    <View style={styles.outerWrapper} pointerEvents="box-none">
       {/* Main Lavender Header Card */}
-      <Animated.View
+      <View
         style={[
           styles.headerContainer,
           {
             paddingTop: Math.max(insets.top, 20) + 6,
-            paddingBottom: headerPaddingBottom,
           },
         ]}
       >
         {/* Subtle Decorative Background Grid */}
-        <Svg width={width} height={160} style={StyleSheet.absoluteFill} pointerEvents="none">
+        <Svg width={width} height={180} style={StyleSheet.absoluteFill} pointerEvents="none">
           {[40, 80, 120, 160, 200, 240, 280, 320, 360].map((x) => (
             <Line
               key={`v-${x}`}
               x1={x}
               y1={0}
               x2={x}
-              y2={160}
+              y2={180}
               stroke="rgba(255, 255, 255, 0.08)"
               strokeWidth={1}
             />
           ))}
-          {[30, 60, 90, 120, 150].map((y) => (
+          {[30, 60, 90, 120, 150, 180].map((y) => (
             <Line
               key={`h-${y}`}
               x1={0}
@@ -198,24 +214,20 @@ export const HomeHeaderWithCalendar: React.FC<HomeHeaderWithCalendarProps> = ({
             ))}
           </View>
         </Animated.View>
-      </Animated.View>
+      </View>
 
-      {/* SVG Organic Wave Bottom Boundary */}
-      <View style={styles.waveSvgContainer}>
-        <Svg width={width} height={34} viewBox={`0 0 ${width} 34`}>
+      {/* SVG Layered Organic Wave Boundary: Lavender Fill + Grey Contour Gap Line */}
+      <View style={styles.waveSvgContainer} pointerEvents="none">
+        <Svg width={width} height={46} viewBox={`0 0 ${width} 46`}>
+          {/* Lavender Organic Shape Fill */}
+          <Path d={waveFillPath} fill="#7C83FD" />
+          {/* Subtle Grey Contour Line ("antha curves la lavender idaila gap gray and white") */}
           <Path
-            d={`
-              M 0 0
-              L 0 10
-              C ${cx - 140} 10, ${cx - 120} 2, ${cx - 105} 2
-              C ${cx - 95} 2, ${cx - 90} 26, ${cx - 70} 26
-              L ${cx + 70} 26
-              C ${cx + 90} 26, ${cx + 95} 2, ${cx + 105} 2
-              C ${cx + 120} 2, ${cx + 140} 10, ${width} 10
-              L ${width} 0
-              Z
-            `}
-            fill="#7C83FD"
+            d={waveContourPath}
+            fill="none"
+            stroke="#E2E8F0"
+            strokeWidth={1.8}
+            strokeLinecap="round"
           />
         </Svg>
       </View>
@@ -239,7 +251,7 @@ export const HomeHeaderWithCalendar: React.FC<HomeHeaderWithCalendarProps> = ({
                 width="16"
                 height="4"
                 rx="2"
-                stroke={currentLayout === 'list' ? '#FFFFFF' : '#818CF8'}
+                stroke={currentLayout === 'list' ? '#FFFFFF' : '#6366F1'}
                 strokeWidth="1.6"
               />
               <Rect
@@ -248,7 +260,7 @@ export const HomeHeaderWithCalendar: React.FC<HomeHeaderWithCalendarProps> = ({
                 width="16"
                 height="4"
                 rx="2"
-                stroke={currentLayout === 'list' ? '#FFFFFF' : '#818CF8'}
+                stroke={currentLayout === 'list' ? '#FFFFFF' : '#6366F1'}
                 strokeWidth="1.6"
               />
             </Svg>
@@ -270,7 +282,7 @@ export const HomeHeaderWithCalendar: React.FC<HomeHeaderWithCalendarProps> = ({
                 width="6.5"
                 height="14"
                 rx="2"
-                stroke={currentLayout === 'dual' ? '#FFFFFF' : '#818CF8'}
+                stroke={currentLayout === 'dual' ? '#FFFFFF' : '#6366F1'}
                 strokeWidth="1.6"
               />
               <Rect
@@ -279,7 +291,7 @@ export const HomeHeaderWithCalendar: React.FC<HomeHeaderWithCalendarProps> = ({
                 width="6.5"
                 height="14"
                 rx="2"
-                stroke={currentLayout === 'dual' ? '#FFFFFF' : '#818CF8'}
+                stroke={currentLayout === 'dual' ? '#FFFFFF' : '#6366F1'}
                 strokeWidth="1.6"
               />
             </Svg>
@@ -301,7 +313,7 @@ export const HomeHeaderWithCalendar: React.FC<HomeHeaderWithCalendarProps> = ({
                 width="6.5"
                 height="6.5"
                 rx="2"
-                stroke={currentLayout === 'grid' ? '#FFFFFF' : '#818CF8'}
+                stroke={currentLayout === 'grid' ? '#FFFFFF' : '#6366F1'}
                 strokeWidth="1.6"
               />
               <Rect
@@ -310,7 +322,7 @@ export const HomeHeaderWithCalendar: React.FC<HomeHeaderWithCalendarProps> = ({
                 width="6.5"
                 height="6.5"
                 rx="2"
-                stroke={currentLayout === 'grid' ? '#FFFFFF' : '#818CF8'}
+                stroke={currentLayout === 'grid' ? '#FFFFFF' : '#6366F1'}
                 strokeWidth="1.6"
               />
               <Rect
@@ -319,7 +331,7 @@ export const HomeHeaderWithCalendar: React.FC<HomeHeaderWithCalendarProps> = ({
                 width="6.5"
                 height="6.5"
                 rx="2"
-                stroke={currentLayout === 'grid' ? '#FFFFFF' : '#818CF8'}
+                stroke={currentLayout === 'grid' ? '#FFFFFF' : '#6366F1'}
                 strokeWidth="1.6"
               />
               <Rect
@@ -328,7 +340,7 @@ export const HomeHeaderWithCalendar: React.FC<HomeHeaderWithCalendarProps> = ({
                 width="6.5"
                 height="6.5"
                 rx="2"
-                stroke={currentLayout === 'grid' ? '#FFFFFF' : '#818CF8'}
+                stroke={currentLayout === 'grid' ? '#FFFFFF' : '#6366F1'}
                 strokeWidth="1.6"
               />
             </Svg>
@@ -341,25 +353,29 @@ export const HomeHeaderWithCalendar: React.FC<HomeHeaderWithCalendarProps> = ({
 
 const styles = StyleSheet.create({
   outerWrapper: {
-    position: 'relative',
-    backgroundColor: '#FFFFFF',
-    zIndex: 20,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 100,
+    elevation: 8,
   },
   headerContainer: {
     backgroundColor: '#7C83FD', // Vibrant Periwinkle Lavender
     paddingHorizontal: 16,
     position: 'relative',
+    paddingBottom: 2,
   },
   waveSvgContainer: {
     marginTop: -1,
     width: width,
-    height: 34,
+    height: 46,
   },
   topBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    marginBottom: 8,
   },
   profileRow: {
     flexDirection: 'row',
@@ -410,7 +426,7 @@ const styles = StyleSheet.create({
   dayPill: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: 9,
     borderRadius: 20,
     marginHorizontal: 3,
     backgroundColor: 'rgba(255, 255, 255, 0.12)',
@@ -424,7 +440,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: 'rgba(255, 255, 255, 0.82)',
-    marginBottom: 6,
+    marginBottom: 5,
   },
   dayNameSelected: {
     color: '#FFFFFF',
@@ -457,33 +473,36 @@ const styles = StyleSheet.create({
   },
   switcherWrapper: {
     position: 'absolute',
-    bottom: -6,
+    bottom: 2,
     left: 0,
     right: 0,
     alignItems: 'center',
-    zIndex: 30,
+    zIndex: 110,
   },
   segmentContainer: {
     flexDirection: 'row',
-    backgroundColor: '#E6E9FD',
+    backgroundColor: '#FFFFFF', // Pure White Pill matching screenshot
     borderRadius: 24,
-    padding: 4,
+    padding: 3,
     gap: 4,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 5,
-    elevation: 4,
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 3,
   },
   segmentBtn: {
     paddingHorizontal: 16,
     paddingVertical: 7,
-    borderRadius: 20,
+    borderRadius: 18,
+    backgroundColor: '#EEF2FF', // Soft lilac inactive background matching screenshot
     justifyContent: 'center',
     alignItems: 'center',
   },
   segmentBtnActive: {
-    backgroundColor: '#6366F1',
+    backgroundColor: '#6366F1', // Solid purple active background
     shadowColor: '#6366F1',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.35,

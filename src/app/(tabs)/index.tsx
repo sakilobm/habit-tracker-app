@@ -37,17 +37,7 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Dynamic Curved Lavender Header with Organic Wave & Continuous Scroll Collapse */}
-      <HomeHeaderWithCalendar
-        currentLayout={layoutMode}
-        onSelectLayout={handleSelectLayout}
-        selectedDate={selectedDate}
-        onSelectDate={setSelectedDate}
-        scrollY={scrollY}
-        onPressProfile={() => router.push('/profile')}
-        onOpenCalendar={() => {}}
-      />
-
+      {/* 1. Underlying ScrollView: Fixed Frame, Zero Layout Thrashing */}
       <Animated.ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -55,7 +45,11 @@ export default function HomeScreen() {
         onScroll={handleScroll}
         scrollEventThrottle={16}
         overScrollMode="never"
+        alwaysBounceVertical={true}
       >
+        {/* Top Spacer matches header resting height with breathing room */}
+        <View style={styles.topSpacer} />
+
         {/* Hemicycle Dotted Fan Arc Gauge */}
         <DottedFanArc percentage={completionPercentage} />
 
@@ -109,6 +103,17 @@ export default function HomeScreen() {
         )}
       </Animated.ScrollView>
 
+      {/* 2. Floating Header Overlay (100% Flicker-Free) */}
+      <HomeHeaderWithCalendar
+        currentLayout={layoutMode}
+        onSelectLayout={handleSelectLayout}
+        selectedDate={selectedDate}
+        onSelectDate={setSelectedDate}
+        scrollY={scrollY}
+        onPressProfile={() => router.push('/profile')}
+        onOpenCalendar={() => {}}
+      />
+
       {/* Action Bottom Sheet */}
       <HabitActionSheet
         habit={activeHabitForSheet}
@@ -128,10 +133,13 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
+  topSpacer: {
+    height: 218,
+  },
   scrollContent: {
     paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 130, // Ample clearance for the floating hexagon tab bar
+    paddingTop: 10,
+    paddingBottom: 220, // Ample clearance to guarantee smooth scrolling in all views
     backgroundColor: '#FFFFFF',
   },
   listContainer: {
