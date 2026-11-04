@@ -122,7 +122,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   topSpacer: {
-    height: 220,
+
+    height: 230,
   },
   scrollContent: {
     paddingHorizontal: 16,

@@ -19,12 +19,16 @@ interface HomeHeaderWithCalendarProps {
 }
 
 /**
- * Routinr Signature Top Header
- * - Upward concave wave boundary: Left/right wings extend lower, center scoops upward.
- * - Subtle contour line separating lavender header from white content area.
- * - 3 unboxed layout buttons: discrete rounded pills with spacing.
- * - Ample vertical clearance for 7-day calendar row so date cards are 100% visible.
- * - Buttery-smooth, zero-flicker scroll collapse powered by native transforms.
+ * Signature Routinr Top Header
+ * - Top Bar: Avatar with dotted ring, animated name fade ("Sakil obm"), and calendar button.
+ * - Weekly Ribbon: 7 days with active date pill, smooth height and opacity collapse.
+ * - Fluid Organic Wave: Lavender wings dipping into a cradle around the white pod.
+ * - Signature Switcher Pod: Pure white capsule enclosing 3 discrete layout buttons (#5965E6 active, #D6DCF9 inactive).
+ * - Exact Vector Icons:
+ *     [ ▭ / ▭ ] List View
+ *     [ ▭ / ▯▯ ] Dual Mini-Tracker View
+ *     [ ⊞ ] 2x2 Grid View
+ * - 60/120 FPS GPU-accelerated collapse with zero layout thrashing.
  */
 export const HomeHeaderWithCalendar: React.FC<HomeHeaderWithCalendarProps> = ({
   currentLayout,
@@ -56,58 +60,58 @@ export const HomeHeaderWithCalendar: React.FC<HomeHeaderWithCalendarProps> = ({
   const fallbackScrollY = useRef(new Animated.Value(0)).current;
   const effectiveScrollY = scrollY || fallbackScrollY;
 
-  // Zero-layout-thrash GPU transforms for 60/120 FPS buttery-smooth collapse
-  const COLLAPSE_DISTANCE = 70;
-
-  const collapsibleTranslateY = effectiveScrollY.interpolate({
-    inputRange: [0, COLLAPSE_DISTANCE],
-    outputRange: [0, -COLLAPSE_DISTANCE],
+  // Smooth continuous collapse of the weekly ribbon
+  const ribbonHeight = effectiveScrollY.interpolate({
+    inputRange: [0, 65],
+    outputRange: [78, 0],
     extrapolate: 'clamp',
   });
 
   const ribbonOpacity = effectiveScrollY.interpolate({
-    inputRange: [0, 30],
+    inputRange: [0, 35],
     outputRange: [1, 0],
     extrapolate: 'clamp',
   });
 
   const nameOpacity = effectiveScrollY.interpolate({
-    inputRange: [0, 25],
+    inputRange: [0, 24],
     outputRange: [1, 0],
     extrapolate: 'clamp',
   });
 
   const cx = width / 2;
-  const svgHeight = 44;
-  const wingY = 38;
-  const plateauY = 14;
+  const svgHeight = 60;
+  const wingY = 36;
+  const archY = 8;
+  const podHalfWidth = 90; // 180px total pod width
+  const transWidth = 28;
 
-  // Exact Upward Concave Curve: Wings at wingY (38), scoops UPWARD to plateauY (14)
+  // Fluid Lavender Fill: Hangs down to wingY on the wings, arches UP to archY above the pod
   const waveFillPath = `
     M 0 0
     L 0 ${wingY}
-    L ${cx - 96} ${wingY}
-    C ${cx - 82} ${wingY}, ${cx - 80} ${plateauY}, ${cx - 66} ${plateauY}
-    L ${cx + 66} ${plateauY}
-    C ${cx + 80} ${plateauY}, ${cx + 82} ${wingY}, ${cx + 96} ${wingY}
+    L ${cx - podHalfWidth - transWidth} ${wingY}
+    C ${cx - podHalfWidth - 14} ${wingY}, ${cx - podHalfWidth - 12} ${archY}, ${cx - podHalfWidth - 2} ${archY}
+    L ${cx + podHalfWidth + 2} ${archY}
+    C ${cx + podHalfWidth + 12} ${archY}, ${cx + podHalfWidth + 14} ${wingY}, ${cx + podHalfWidth + transWidth} ${wingY}
     L ${width} ${wingY}
     L ${width} 0
     Z
   `;
 
-  // Subtle Contour Stroke Line along the boundary
+  // Subtle Contour Stroke Line framing the boundary
   const waveContourPath = `
     M 0 ${wingY}
-    L ${cx - 96} ${wingY}
-    C ${cx - 82} ${wingY}, ${cx - 80} ${plateauY}, ${cx - 66} ${plateauY}
-    L ${cx + 66} ${plateauY}
-    C ${cx + 80} ${plateauY}, ${cx + 82} ${wingY}, ${cx + 96} ${wingY}
+    L ${cx - podHalfWidth - transWidth} ${wingY}
+    C ${cx - podHalfWidth - 14} ${wingY}, ${cx - podHalfWidth - 12} ${archY}, ${cx - podHalfWidth - 2} ${archY}
+    L ${cx + podHalfWidth + 2} ${archY}
+    C ${cx + podHalfWidth + 12} ${archY}, ${cx + podHalfWidth + 14} ${wingY}, ${cx + podHalfWidth + transWidth} ${wingY}
     L ${width} ${wingY}
   `;
 
   return (
     <View style={styles.outerWrapper} pointerEvents="box-none">
-      {/* 1. Permanent Lavender Base Layer (Covers Status Bar & Top Bar) */}
+      {/* 1. Permanent Top Bar (Covers Safe Area Status Bar) */}
       <View
         style={[
           styles.topBarContainer,
@@ -150,64 +154,55 @@ export const HomeHeaderWithCalendar: React.FC<HomeHeaderWithCalendarProps> = ({
         </View>
       </View>
 
-      {/* 2. Collapsible Section (Ribbon + Curve Contour + 3 Switcher Buttons) */}
+      {/* 2. Collapsible Weekly Ribbon Section */}
       <Animated.View
         style={[
-          styles.collapsibleSection,
+          styles.ribbonSection,
           {
-            transform: [{ translateY: collapsibleTranslateY }],
+            height: ribbonHeight,
+            opacity: ribbonOpacity,
           },
         ]}
-        pointerEvents="box-none"
       >
-        {/* Lavender Extension Behind Weekly Ribbon */}
-        <View style={styles.ribbonLavenderExtension}>
-          <Animated.View
-            style={[
-              styles.ribbonWrapper,
-              {
-                opacity: ribbonOpacity,
-              },
-            ]}
-          >
-            <View style={styles.ribbonRow}>
-              {weekDays.map((day) => (
-                <TouchableOpacity
-                  key={day.dateStr}
-                  style={[styles.dayPill, day.isSelected && styles.dayPillSelected]}
-                  onPress={() => onSelectDate(day.dateStr)}
-                  activeOpacity={0.7}
+        <View style={styles.ribbonRow}>
+          {weekDays.map((day) => (
+            <TouchableOpacity
+              key={day.dateStr}
+              style={[styles.dayPill, day.isSelected && styles.dayPillSelected]}
+              onPress={() => onSelectDate(day.dateStr)}
+              activeOpacity={0.7}
+            >
+              <Text
+                style={[
+                  styles.dayName,
+                  day.isSelected && styles.dayNameSelected,
+                ]}
+              >
+                {day.name}
+              </Text>
+              <View
+                style={[
+                  styles.dateCircle,
+                  day.isSelected && styles.dateCircleSelected,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.dateNum,
+                    day.isSelected && styles.dateNumSelected,
+                  ]}
                 >
-                  <Text
-                    style={[
-                      styles.dayName,
-                      day.isSelected && styles.dayNameSelected,
-                    ]}
-                  >
-                    {day.name}
-                  </Text>
-                  <View
-                    style={[
-                      styles.dateCircle,
-                      day.isSelected && styles.dateCircleSelected,
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.dateNum,
-                        day.isSelected && styles.dateNumSelected,
-                      ]}
-                    >
-                      {day.number}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </Animated.View>
+                  {day.number}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          ))}
         </View>
+      </Animated.View>
 
-        {/* Upward Concave SVG Curve with Contour Line */}
+      {/* 3. Wave Curve & Switcher Pod Container (Always Locked Together) */}
+      <View style={styles.curveAndPodWrapper} pointerEvents="box-none">
+        {/* Organic Wave Boundary SVG */}
         <View style={styles.waveSvgContainer} pointerEvents="none">
           <Svg width={width} height={svgHeight} viewBox={`0 0 ${width} ${svgHeight}`}>
             <Path d={waveFillPath} fill="#7C83FD" />
@@ -215,16 +210,16 @@ export const HomeHeaderWithCalendar: React.FC<HomeHeaderWithCalendarProps> = ({
               d={waveContourPath}
               fill="none"
               stroke="#BAC0ED"
-              strokeWidth={1.5}
+              strokeWidth={1.8}
               strokeLinecap="round"
             />
           </Svg>
         </View>
 
-        {/* 3 Switcher Buttons (No Outer Box, Discrete Rounded Pills with Gaps) */}
-        <View style={styles.switcherWrapper} pointerEvents="box-none">
-          <View style={styles.buttonsRow}>
-            {/* Button 1: Single-Line Compact List [ ▭ ] */}
+        {/* Signature White Capsule Pod with 3 Layout Buttons */}
+        <View style={styles.podContainer} pointerEvents="box-none">
+          <View style={styles.podShell}>
+            {/* Button 1: Single-Line Compact List [ ▭ / ▭ ] */}
             <TouchableOpacity
               style={[
                 styles.segmentBtn,
@@ -236,26 +231,26 @@ export const HomeHeaderWithCalendar: React.FC<HomeHeaderWithCalendarProps> = ({
               <Svg width="18" height="18" viewBox="0 0 20 20" fill="none">
                 <Rect
                   x="2"
-                  y="4.5"
+                  y="4"
                   width="16"
-                  height="4"
-                  rx="2"
-                  stroke={currentLayout === 'list' ? '#FFFFFF' : '#6366F1'}
-                  strokeWidth="1.6"
+                  height="4.5"
+                  rx="2.2"
+                  stroke={currentLayout === 'list' ? '#FFFFFF' : '#5965E6'}
+                  strokeWidth="1.8"
                 />
                 <Rect
                   x="2"
                   y="11.5"
                   width="16"
-                  height="4"
-                  rx="2"
-                  stroke={currentLayout === 'list' ? '#FFFFFF' : '#6366F1'}
-                  strokeWidth="1.6"
+                  height="4.5"
+                  rx="2.2"
+                  stroke={currentLayout === 'list' ? '#FFFFFF' : '#5965E6'}
+                  strokeWidth="1.8"
                 />
               </Svg>
             </TouchableOpacity>
 
-            {/* Button 2: Weekly Mini-Calendar View [ ▯ ▯ ] */}
+            {/* Button 2: Dual Mini-Calendar View [ ▭ / ▯▯ ] */}
             <TouchableOpacity
               style={[
                 styles.segmentBtn,
@@ -267,26 +262,35 @@ export const HomeHeaderWithCalendar: React.FC<HomeHeaderWithCalendarProps> = ({
               <Svg width="18" height="18" viewBox="0 0 20 20" fill="none">
                 <Rect
                   x="2.5"
-                  y="3"
+                  y="3.5"
+                  width="15"
+                  height="4.5"
+                  rx="2.2"
+                  stroke={currentLayout === 'dual' ? '#FFFFFF' : '#5965E6'}
+                  strokeWidth="1.8"
+                />
+                <Rect
+                  x="2.5"
+                  y="10.5"
                   width="6.5"
-                  height="14"
-                  rx="2"
-                  stroke={currentLayout === 'dual' ? '#FFFFFF' : '#6366F1'}
-                  strokeWidth="1.6"
+                  height="6.5"
+                  rx="2.2"
+                  stroke={currentLayout === 'dual' ? '#FFFFFF' : '#5965E6'}
+                  strokeWidth="1.8"
                 />
                 <Rect
                   x="11"
-                  y="3"
+                  y="10.5"
                   width="6.5"
-                  height="14"
-                  rx="2"
-                  stroke={currentLayout === 'dual' ? '#FFFFFF' : '#6366F1'}
-                  strokeWidth="1.6"
+                  height="6.5"
+                  rx="2.2"
+                  stroke={currentLayout === 'dual' ? '#FFFFFF' : '#5965E6'}
+                  strokeWidth="1.8"
                 />
               </Svg>
             </TouchableOpacity>
 
-            {/* Button 3: Grid View [ ⊞ ] */}
+            {/* Button 3: Grid View [ ⊞ ] (2x2 Squares) */}
             <TouchableOpacity
               style={[
                 styles.segmentBtn,
@@ -302,8 +306,8 @@ export const HomeHeaderWithCalendar: React.FC<HomeHeaderWithCalendarProps> = ({
                   width="6.5"
                   height="6.5"
                   rx="2"
-                  stroke={currentLayout === 'grid' ? '#FFFFFF' : '#6366F1'}
-                  strokeWidth="1.6"
+                  stroke={currentLayout === 'grid' ? '#FFFFFF' : '#5965E6'}
+                  strokeWidth="1.8"
                 />
                 <Rect
                   x="11"
@@ -311,8 +315,8 @@ export const HomeHeaderWithCalendar: React.FC<HomeHeaderWithCalendarProps> = ({
                   width="6.5"
                   height="6.5"
                   rx="2"
-                  stroke={currentLayout === 'grid' ? '#FFFFFF' : '#6366F1'}
-                  strokeWidth="1.6"
+                  stroke={currentLayout === 'grid' ? '#FFFFFF' : '#5965E6'}
+                  strokeWidth="1.8"
                 />
                 <Rect
                   x="2.5"
@@ -320,8 +324,8 @@ export const HomeHeaderWithCalendar: React.FC<HomeHeaderWithCalendarProps> = ({
                   width="6.5"
                   height="6.5"
                   rx="2"
-                  stroke={currentLayout === 'grid' ? '#FFFFFF' : '#6366F1'}
-                  strokeWidth="1.6"
+                  stroke={currentLayout === 'grid' ? '#FFFFFF' : '#5965E6'}
+                  strokeWidth="1.8"
                 />
                 <Rect
                   x="11"
@@ -329,14 +333,14 @@ export const HomeHeaderWithCalendar: React.FC<HomeHeaderWithCalendarProps> = ({
                   width="6.5"
                   height="6.5"
                   rx="2"
-                  stroke={currentLayout === 'grid' ? '#FFFFFF' : '#6366F1'}
-                  strokeWidth="1.6"
+                  stroke={currentLayout === 'grid' ? '#FFFFFF' : '#5965E6'}
+                  strokeWidth="1.8"
                 />
               </Svg>
             </TouchableOpacity>
           </View>
         </View>
-      </Animated.View>
+      </View>
     </View>
   );
 };
@@ -350,9 +354,9 @@ const styles = StyleSheet.create({
     zIndex: 100,
   },
   topBarContainer: {
-    backgroundColor: '#7C83FD', // Signature Periwinkle Lavender
+    backgroundColor: '#7C83FD', // Vibrant Periwinkle Lavender
     paddingHorizontal: 16,
-    paddingBottom: 6,
+    paddingBottom: 4,
     zIndex: 10,
   },
   topBar: {
@@ -397,26 +401,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  collapsibleSection: {
-    width: '100%',
-  },
-  ribbonLavenderExtension: {
+  ribbonSection: {
     backgroundColor: '#7C83FD',
     paddingHorizontal: 16,
-    paddingTop: 6,
-    paddingBottom: 16, // Clean clearance: date cards finish well above the curve
-  },
-  ribbonWrapper: {
-    width: '100%',
+    overflow: 'hidden',
   },
   ribbonRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    paddingTop: 2,
+    paddingBottom: 14,
   },
   dayPill: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 7,
     borderRadius: 18,
     marginHorizontal: 3,
     backgroundColor: 'rgba(255, 255, 255, 0.12)',
@@ -458,45 +457,60 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   dateNumSelected: {
-    color: '#6366F1',
+    color: '#5965E6',
     fontWeight: '800',
+  },
+  curveAndPodWrapper: {
+    width: width,
+    height: 60,
+    position: 'relative',
   },
   waveSvgContainer: {
     marginTop: -1,
     width: width,
-    height: 44,
+    height: 60,
   },
-  switcherWrapper: {
+  podContainer: {
     position: 'absolute',
-    bottom: -6,
+    top: 12,
     left: 0,
     right: 0,
     alignItems: 'center',
     zIndex: 20,
   },
-  buttonsRow: {
+  podShell: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    width: 180,
+    height: 44,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 22,
+    padding: 4,
+    gap: 4,
+    borderWidth: 1.2,
+    borderColor: '#E2E6F2',
+    shadowColor: '#3B4896',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 3,
   },
   segmentBtn: {
-    width: 48,
-    height: 32,
-    borderRadius: 16,
+    flex: 1,
+    height: 36,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
   },
   segmentBtnActive: {
-    backgroundColor: '#6366F1', // Active vibrant purple pill
-    shadowColor: '#6366F1',
+    backgroundColor: '#5965E6', // Active vibrant indigo
+    shadowColor: '#5965E6',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.35,
     shadowRadius: 3,
     elevation: 2,
   },
   segmentBtnInactive: {
-    backgroundColor: '#EEF2FF', // Inactive light periwinkle pill
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
+    backgroundColor: '#D6DCF9', // Soft periwinkle tint matching screenshot
   },
 });
