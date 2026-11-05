@@ -35,7 +35,7 @@ export function useHomeHabits() {
     () =>
       Animated.event(
         [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-        { useNativeDriver: false }
+        { useNativeDriver: true }
       ),
     [scrollY]
   );

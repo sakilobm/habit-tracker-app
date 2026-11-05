@@ -8,6 +8,9 @@ import { format, startOfWeek, addDays } from 'date-fns';
 
 const { width } = Dimensions.get('window');
 
+/** Height of the 7-day ribbon row (px). Must match the rendered height exactly. */
+const RIBBON_HEIGHT = 78;
+
 interface HomeHeaderWithCalendarProps {
   currentLayout: HabitLayoutMode;
   onSelectLayout: (mode: HabitLayoutMode) => void;
@@ -19,16 +22,17 @@ interface HomeHeaderWithCalendarProps {
 }
 
 /**
- * Signature Routinr Top Header
- * - Top Bar: Avatar with dotted ring, animated name fade ("Sakil obm"), and calendar button.
- * - Weekly Ribbon: 7 days with active date pill, smooth height and opacity collapse.
- * - Fluid Organic Wave: Lavender wings dipping into a cradle around the white pod.
- * - Signature Switcher Pod: Pure white capsule enclosing 3 discrete layout buttons (#5965E6 active, #D6DCF9 inactive).
- * - Exact Vector Icons:
- *     [ ▭ / ▭ ] List View
- *     [ ▭ / ▯▯ ] Dual Mini-Tracker View
- *     [ ⊞ ] 2x2 Grid View
- * - 60/120 FPS GPU-accelerated collapse with zero layout thrashing.
+ * Signature Routinr Top Header — GPU-Accelerated Scroll Collapse
+ *
+ * Layout (top to bottom):
+ *   1. Fixed Top Bar (Avatar · Name · Calendar)  — stays pinned, zIndex clips content behind it
+ *   2. Sliding Section (translateY: 0 → -RIBBON_HEIGHT):
+ *      a. Weekly Ribbon (7-day cards) — fades to opacity 0 as it slides behind the top bar
+ *      b. Organic Wave Curve + Switcher Pod — always visible, docks under top bar when collapsed
+ *
+ * Performance:
+ *   All animations use `transform` and `opacity` only → `useNativeDriver: true` compatible.
+ *   Zero layout recalculations. Zero flicker. 60/120 FPS on all devices.
  */
 export const HomeHeaderWithCalendar: React.FC<HomeHeaderWithCalendarProps> = ({
   currentLayout,
@@ -60,25 +64,30 @@ export const HomeHeaderWithCalendar: React.FC<HomeHeaderWithCalendarProps> = ({
   const fallbackScrollY = useRef(new Animated.Value(0)).current;
   const effectiveScrollY = scrollY || fallbackScrollY;
 
-  // Smooth continuous collapse of the weekly ribbon
-  const ribbonHeight = effectiveScrollY.interpolate({
-    inputRange: [0, 65],
-    outputRange: [78, 0],
+  // ── GPU-Accelerated Transform Animations (useNativeDriver: true compatible) ──
+
+  /** Slides the ribbon + curve + pod section upward by RIBBON_HEIGHT */
+  const slidingTranslateY = effectiveScrollY.interpolate({
+    inputRange: [0, RIBBON_HEIGHT],
+    outputRange: [0, -RIBBON_HEIGHT],
     extrapolate: 'clamp',
   });
 
+  /** Fades out the 7-day ribbon as it slides behind the top bar */
   const ribbonOpacity = effectiveScrollY.interpolate({
-    inputRange: [0, 35],
+    inputRange: [0, RIBBON_HEIGHT * 0.5],
     outputRange: [1, 0],
     extrapolate: 'clamp',
   });
 
+  /** Fades out the profile name ("Sakil obm") early in the scroll */
   const nameOpacity = effectiveScrollY.interpolate({
     inputRange: [0, 24],
     outputRange: [1, 0],
     extrapolate: 'clamp',
   });
 
+  // ── Organic Wave Curve Geometry ──
   const cx = width / 2;
   const svgHeight = 60;
   const wingY = 36;
@@ -86,7 +95,7 @@ export const HomeHeaderWithCalendar: React.FC<HomeHeaderWithCalendarProps> = ({
   const podHalfWidth = 90; // 180px total pod width
   const transWidth = 28;
 
-  // Fluid Lavender Fill: Hangs down to wingY on the wings, arches UP to archY above the pod
+  // Lavender fill: wings at wingY, arches UP to archY above the pod
   const waveFillPath = `
     M 0 0
     L 0 ${wingY}
@@ -99,7 +108,7 @@ export const HomeHeaderWithCalendar: React.FC<HomeHeaderWithCalendarProps> = ({
     Z
   `;
 
-  // Subtle Contour Stroke Line framing the boundary
+  // Subtle contour stroke line
   const waveContourPath = `
     M 0 ${wingY}
     L ${cx - podHalfWidth - transWidth} ${wingY}
@@ -111,7 +120,7 @@ export const HomeHeaderWithCalendar: React.FC<HomeHeaderWithCalendarProps> = ({
 
   return (
     <View style={styles.outerWrapper} pointerEvents="box-none">
-      {/* 1. Permanent Top Bar (Covers Safe Area Status Bar) */}
+      {/* ── 1. Fixed Top Bar (always pinned, clips ribbon behind it) ── */}
       <View
         style={[
           styles.topBarContainer,
@@ -154,193 +163,202 @@ export const HomeHeaderWithCalendar: React.FC<HomeHeaderWithCalendarProps> = ({
         </View>
       </View>
 
-      {/* 2. Collapsible Weekly Ribbon Section */}
+      {/* ── 2. Sliding Section: Ribbon + Curve + Pod (translateY animation) ── */}
       <Animated.View
         style={[
-          styles.ribbonSection,
+          styles.slidingSection,
           {
-            height: ribbonHeight,
-            opacity: ribbonOpacity,
+            transform: [{ translateY: slidingTranslateY }],
           },
         ]}
       >
-        <View style={styles.ribbonRow}>
-          {weekDays.map((day) => (
-            <TouchableOpacity
-              key={day.dateStr}
-              style={[styles.dayPill, day.isSelected && styles.dayPillSelected]}
-              onPress={() => onSelectDate(day.dateStr)}
-              activeOpacity={0.7}
-            >
-              <Text
-                style={[
-                  styles.dayName,
-                  day.isSelected && styles.dayNameSelected,
-                ]}
-              >
-                {day.name}
-              </Text>
-              <View
-                style={[
-                  styles.dateCircle,
-                  day.isSelected && styles.dateCircleSelected,
-                ]}
+        {/* 2a. Weekly Ribbon (fades out as it slides behind top bar) */}
+        <Animated.View
+          style={[
+            styles.ribbonSection,
+            {
+              opacity: ribbonOpacity,
+            },
+          ]}
+        >
+          <View style={styles.ribbonRow}>
+            {weekDays.map((day) => (
+              <TouchableOpacity
+                key={day.dateStr}
+                style={[styles.dayPill, day.isSelected && styles.dayPillSelected]}
+                onPress={() => onSelectDate(day.dateStr)}
+                activeOpacity={0.7}
               >
                 <Text
                   style={[
-                    styles.dateNum,
-                    day.isSelected && styles.dateNumSelected,
+                    styles.dayName,
+                    day.isSelected && styles.dayNameSelected,
                   ]}
                 >
-                  {day.number}
+                  {day.name}
                 </Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </Animated.View>
+                <View
+                  style={[
+                    styles.dateCircle,
+                    day.isSelected && styles.dateCircleSelected,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.dateNum,
+                      day.isSelected && styles.dateNumSelected,
+                    ]}
+                  >
+                    {day.number}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </Animated.View>
 
-      {/* 3. Wave Curve & Switcher Pod Container (Always Locked Together) */}
-      <View style={styles.curveAndPodWrapper} pointerEvents="box-none">
-        {/* Organic Wave Boundary SVG */}
-        <View style={styles.waveSvgContainer} pointerEvents="none">
-          <Svg width={width} height={svgHeight} viewBox={`0 0 ${width} ${svgHeight}`}>
-            <Path d={waveFillPath} fill="#7C83FD" />
-            <Path
-              d={waveContourPath}
-              fill="none"
-              stroke="#BAC0ED"
-              strokeWidth={1.8}
-              strokeLinecap="round"
-            />
-          </Svg>
-        </View>
+        {/* 2b. Organic Wave Curve + Switcher Pod (always visible) */}
+        <View style={styles.curveAndPodWrapper} pointerEvents="box-none">
+          {/* Organic Wave Boundary SVG */}
+          <View style={styles.waveSvgContainer} pointerEvents="none">
+            <Svg width={width} height={svgHeight} viewBox={`0 0 ${width} ${svgHeight}`}>
+              <Path d={waveFillPath} fill="#7C83FD" />
+              <Path
+                d={waveContourPath}
+                fill="none"
+                stroke="#BAC0ED"
+                strokeWidth={1.8}
+                strokeLinecap="round"
+              />
+            </Svg>
+          </View>
 
-        {/* Signature White Capsule Pod with 3 Layout Buttons */}
-        <View style={styles.podContainer} pointerEvents="box-none">
-          <View style={styles.podShell}>
-            {/* Button 1: Single-Line Compact List [ ▭ / ▭ ] */}
-            <TouchableOpacity
-              style={[
-                styles.segmentBtn,
-                currentLayout === 'list' ? styles.segmentBtnActive : styles.segmentBtnInactive,
-              ]}
-              onPress={() => onSelectLayout('list')}
-              activeOpacity={0.75}
-            >
-              <Svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-                <Rect
-                  x="2"
-                  y="4"
-                  width="16"
-                  height="4.5"
-                  rx="2.2"
-                  stroke={currentLayout === 'list' ? '#FFFFFF' : '#5965E6'}
-                  strokeWidth="1.8"
-                />
-                <Rect
-                  x="2"
-                  y="11.5"
-                  width="16"
-                  height="4.5"
-                  rx="2.2"
-                  stroke={currentLayout === 'list' ? '#FFFFFF' : '#5965E6'}
-                  strokeWidth="1.8"
-                />
-              </Svg>
-            </TouchableOpacity>
+          {/* Signature White Capsule Pod with 3 Layout Buttons */}
+          <View style={styles.podContainer} pointerEvents="box-none">
+            <View style={styles.podShell}>
+              {/* Button 1: Single-Line Compact List [ ▭ / ▭ ] */}
+              <TouchableOpacity
+                style={[
+                  styles.segmentBtn,
+                  currentLayout === 'list' ? styles.segmentBtnActive : styles.segmentBtnInactive,
+                ]}
+                onPress={() => onSelectLayout('list')}
+                activeOpacity={0.75}
+              >
+                <Svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                  <Rect
+                    x="2"
+                    y="4"
+                    width="16"
+                    height="4.5"
+                    rx="2.2"
+                    stroke={currentLayout === 'list' ? '#FFFFFF' : '#5965E6'}
+                    strokeWidth="1.8"
+                  />
+                  <Rect
+                    x="2"
+                    y="11.5"
+                    width="16"
+                    height="4.5"
+                    rx="2.2"
+                    stroke={currentLayout === 'list' ? '#FFFFFF' : '#5965E6'}
+                    strokeWidth="1.8"
+                  />
+                </Svg>
+              </TouchableOpacity>
 
-            {/* Button 2: Dual Mini-Calendar View [ ▭ / ▯▯ ] */}
-            <TouchableOpacity
-              style={[
-                styles.segmentBtn,
-                currentLayout === 'dual' ? styles.segmentBtnActive : styles.segmentBtnInactive,
-              ]}
-              onPress={() => onSelectLayout('dual')}
-              activeOpacity={0.75}
-            >
-              <Svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-                <Rect
-                  x="2.5"
-                  y="3.5"
-                  width="15"
-                  height="4.5"
-                  rx="2.2"
-                  stroke={currentLayout === 'dual' ? '#FFFFFF' : '#5965E6'}
-                  strokeWidth="1.8"
-                />
-                <Rect
-                  x="2.5"
-                  y="10.5"
-                  width="6.5"
-                  height="6.5"
-                  rx="2.2"
-                  stroke={currentLayout === 'dual' ? '#FFFFFF' : '#5965E6'}
-                  strokeWidth="1.8"
-                />
-                <Rect
-                  x="11"
-                  y="10.5"
-                  width="6.5"
-                  height="6.5"
-                  rx="2.2"
-                  stroke={currentLayout === 'dual' ? '#FFFFFF' : '#5965E6'}
-                  strokeWidth="1.8"
-                />
-              </Svg>
-            </TouchableOpacity>
+              {/* Button 2: Dual Mini-Calendar View [ ▭ / ▯▯ ] */}
+              <TouchableOpacity
+                style={[
+                  styles.segmentBtn,
+                  currentLayout === 'dual' ? styles.segmentBtnActive : styles.segmentBtnInactive,
+                ]}
+                onPress={() => onSelectLayout('dual')}
+                activeOpacity={0.75}
+              >
+                <Svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                  <Rect
+                    x="2.5"
+                    y="3.5"
+                    width="15"
+                    height="4.5"
+                    rx="2.2"
+                    stroke={currentLayout === 'dual' ? '#FFFFFF' : '#5965E6'}
+                    strokeWidth="1.8"
+                  />
+                  <Rect
+                    x="2.5"
+                    y="10.5"
+                    width="6.5"
+                    height="6.5"
+                    rx="2.2"
+                    stroke={currentLayout === 'dual' ? '#FFFFFF' : '#5965E6'}
+                    strokeWidth="1.8"
+                  />
+                  <Rect
+                    x="11"
+                    y="10.5"
+                    width="6.5"
+                    height="6.5"
+                    rx="2.2"
+                    stroke={currentLayout === 'dual' ? '#FFFFFF' : '#5965E6'}
+                    strokeWidth="1.8"
+                  />
+                </Svg>
+              </TouchableOpacity>
 
-            {/* Button 3: Grid View [ ⊞ ] (2x2 Squares) */}
-            <TouchableOpacity
-              style={[
-                styles.segmentBtn,
-                currentLayout === 'grid' ? styles.segmentBtnActive : styles.segmentBtnInactive,
-              ]}
-              onPress={() => onSelectLayout('grid')}
-              activeOpacity={0.75}
-            >
-              <Svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-                <Rect
-                  x="2.5"
-                  y="2.5"
-                  width="6.5"
-                  height="6.5"
-                  rx="2"
-                  stroke={currentLayout === 'grid' ? '#FFFFFF' : '#5965E6'}
-                  strokeWidth="1.8"
-                />
-                <Rect
-                  x="11"
-                  y="2.5"
-                  width="6.5"
-                  height="6.5"
-                  rx="2"
-                  stroke={currentLayout === 'grid' ? '#FFFFFF' : '#5965E6'}
-                  strokeWidth="1.8"
-                />
-                <Rect
-                  x="2.5"
-                  y="11"
-                  width="6.5"
-                  height="6.5"
-                  rx="2"
-                  stroke={currentLayout === 'grid' ? '#FFFFFF' : '#5965E6'}
-                  strokeWidth="1.8"
-                />
-                <Rect
-                  x="11"
-                  y="11"
-                  width="6.5"
-                  height="6.5"
-                  rx="2"
-                  stroke={currentLayout === 'grid' ? '#FFFFFF' : '#5965E6'}
-                  strokeWidth="1.8"
-                />
-              </Svg>
-            </TouchableOpacity>
+              {/* Button 3: Grid View [ ⊞ ] (2x2 Squares) */}
+              <TouchableOpacity
+                style={[
+                  styles.segmentBtn,
+                  currentLayout === 'grid' ? styles.segmentBtnActive : styles.segmentBtnInactive,
+                ]}
+                onPress={() => onSelectLayout('grid')}
+                activeOpacity={0.75}
+              >
+                <Svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                  <Rect
+                    x="2.5"
+                    y="2.5"
+                    width="6.5"
+                    height="6.5"
+                    rx="2"
+                    stroke={currentLayout === 'grid' ? '#FFFFFF' : '#5965E6'}
+                    strokeWidth="1.8"
+                  />
+                  <Rect
+                    x="11"
+                    y="2.5"
+                    width="6.5"
+                    height="6.5"
+                    rx="2"
+                    stroke={currentLayout === 'grid' ? '#FFFFFF' : '#5965E6'}
+                    strokeWidth="1.8"
+                  />
+                  <Rect
+                    x="2.5"
+                    y="11"
+                    width="6.5"
+                    height="6.5"
+                    rx="2"
+                    stroke={currentLayout === 'grid' ? '#FFFFFF' : '#5965E6'}
+                    strokeWidth="1.8"
+                  />
+                  <Rect
+                    x="11"
+                    y="11"
+                    width="6.5"
+                    height="6.5"
+                    rx="2"
+                    stroke={currentLayout === 'grid' ? '#FFFFFF' : '#5965E6'}
+                    strokeWidth="1.8"
+                  />
+                </Svg>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
-      </View>
+      </Animated.View>
     </View>
   );
 };
@@ -354,10 +372,10 @@ const styles = StyleSheet.create({
     zIndex: 100,
   },
   topBarContainer: {
-    backgroundColor: '#7C83FD', // Vibrant Periwinkle Lavender
+    backgroundColor: '#7C83FD',
     paddingHorizontal: 16,
     paddingBottom: 4,
-    zIndex: 10,
+    zIndex: 10, // Higher than slidingSection → ribbon slides BEHIND it
   },
   topBar: {
     flexDirection: 'row',
@@ -401,10 +419,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  slidingSection: {
+    // This entire section slides up via translateY
+    // zIndex < topBarContainer so it slides behind the top bar
+    zIndex: 5,
+  },
   ribbonSection: {
     backgroundColor: '#7C83FD',
     paddingHorizontal: 16,
-    overflow: 'hidden',
+    height: RIBBON_HEIGHT,
   },
   ribbonRow: {
     flexDirection: 'row',
@@ -503,7 +526,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   segmentBtnActive: {
-    backgroundColor: '#5965E6', // Active vibrant indigo
+    backgroundColor: '#5965E6',
     shadowColor: '#5965E6',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.35,
@@ -511,6 +534,6 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   segmentBtnInactive: {
-    backgroundColor: '#D6DCF9', // Soft periwinkle tint matching screenshot
+    backgroundColor: '#D6DCF9',
   },
 });

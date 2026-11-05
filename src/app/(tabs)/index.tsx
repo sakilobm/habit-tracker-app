@@ -100,7 +100,7 @@ export default function HomeScreen() {
         onSelectDate={setSelectedDate}
         scrollY={scrollY}
         onPressProfile={() => router.push('/profile')}
-        onOpenCalendar={() => {}}
+        onOpenCalendar={() => { }}
       />
 
       <HabitActionSheet
