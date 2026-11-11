@@ -65,11 +65,13 @@ export function useHomeHabits() {
   );
 
   // Dynamic calculations for Hemicycle Arc and Streak Cards
-  const { completedCount, totalCount, completionPercentage, streakDays, weekAverage } = useMemo(() => {
+  const { completedCount, totalCount, completionPercentage, streakDays, streakTarget, streakPercentage, weekAverage } = useMemo(() => {
     const total = habits.length;
     const completed = habits.filter((h) => h.isCompleted).length;
     const percentage = total > 0 ? (completed / total) * 100 : 0;
     const maxStreak = habits.reduce((max, h) => Math.max(max, h.currentStreak), 0);
+    const target = 3;
+    const sPct = Math.min(100, (maxStreak / target) * 100);
 
     // Dynamic week average matches completion rate
     const avg = total > 0 ? Math.round((completed / total) * 100) : 0;
@@ -79,6 +81,8 @@ export function useHomeHabits() {
       totalCount: total,
       completionPercentage: percentage,
       streakDays: maxStreak,
+      streakTarget: target,
+      streakPercentage: sPct,
       weekAverage: avg,
     };
   }, [habits]);
@@ -94,6 +98,8 @@ export function useHomeHabits() {
     totalCount,
     completionPercentage,
     streakDays,
+    streakTarget,
+    streakPercentage,
     weekAverage,
     handleScroll,
     handleToggleHabit,

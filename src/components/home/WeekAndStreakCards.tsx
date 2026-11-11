@@ -1,16 +1,18 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import Svg, { Defs, Pattern, Line, Rect } from 'react-native-svg';
 
 interface WeekAndStreakCardsProps {
-  weekAverage: number; // e.g. 33
+  weekAverage: number; // e.g. 22
   streakDays: number;  // e.g. 0
   streakTarget: number; // e.g. 3
 }
 
 /**
- * Week Progress & Streak Double Cards (Exact match to Routinr Home Screen)
- * Displays 7 slanted capsule bars for weekly average and streak momentum.
+ * Week Progress & Streak Split Panel (Exact match to Routinr Home Screen)
+ * Displays two halves divided by a hairline separator inside the top analytics sheet,
+ * with 7 slanted capsule bars (including subtle diagonal stripe texture on active week bars).
  */
 export const WeekAndStreakCards: React.FC<WeekAndStreakCardsProps> = ({
   weekAverage,
@@ -18,14 +20,14 @@ export const WeekAndStreakCards: React.FC<WeekAndStreakCardsProps> = ({
   streakTarget = 3,
 }) => {
   const bars = [0, 1, 2, 3, 4, 5, 6];
-  const activeWeekBars = Math.round((weekAverage / 100) * 7);
+  const activeWeekBars = Math.max(weekAverage > 0 ? 1 : 0, Math.round((weekAverage / 100) * 7));
 
   return (
     <View style={styles.container}>
-      {/* Left Card: This Week */}
-      <View style={styles.card}>
+      {/* Left Half: This week */}
+      <View style={styles.halfColumn}>
         <View style={styles.headerRow}>
-          <Ionicons name="trending-up-outline" size={16} color="#10B981" />
+          <Ionicons name="analytics-outline" size={15} color="#16A34A" />
           <Text style={styles.headerTitle}>This week</Text>
         </View>
 
@@ -33,14 +35,44 @@ export const WeekAndStreakCards: React.FC<WeekAndStreakCardsProps> = ({
         <View style={styles.barsRow}>
           {bars.map((idx) => {
             const isFilled = idx < activeWeekBars;
+            const isSoftGreen = !isFilled && weekAverage > 0 && idx < activeWeekBars + 2;
+
             return (
               <View
                 key={idx}
                 style={[
                   styles.slantedBar,
-                  isFilled ? styles.barGreenFilled : styles.barPending,
+                  isFilled
+                    ? styles.barGreenFilled
+                    : isSoftGreen
+                      ? styles.barGreenSoft
+                      : styles.barPending,
                 ]}
-              />
+              >
+                {isFilled && (
+                  <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
+                    <Defs>
+                      <Pattern
+                        id={`weekStripe-${idx}`}
+                        width="6"
+                        height="6"
+                        patternUnits="userSpaceOnUse"
+                        patternTransform="rotate(35)"
+                      >
+                        <Line
+                          x1="0"
+                          y1="0"
+                          x2="0"
+                          y2="6"
+                          stroke="rgba(255,255,255,0.28)"
+                          strokeWidth="2"
+                        />
+                      </Pattern>
+                    </Defs>
+                    <Rect width="100%" height="100%" fill={`url(#weekStripe-${idx})`} />
+                  </Svg>
+                )}
+              </View>
             );
           })}
         </View>
@@ -50,10 +82,13 @@ export const WeekAndStreakCards: React.FC<WeekAndStreakCardsProps> = ({
         </Text>
       </View>
 
-      {/* Right Card: Streak */}
-      <View style={styles.card}>
+      {/* Hairline Vertical Divider */}
+      <View style={styles.verticalDivider} />
+
+      {/* Right Half: Streak */}
+      <View style={styles.halfColumn}>
         <View style={styles.headerRow}>
-          <Ionicons name="flame" size={16} color="#F59E0B" />
+          <Ionicons name="flame" size={15} color="#C25E28" />
           <Text style={styles.headerTitle}>Streak</Text>
         </View>
 
@@ -84,65 +119,68 @@ export const WeekAndStreakCards: React.FC<WeekAndStreakCardsProps> = ({
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 16,
+    alignItems: 'stretch',
+    paddingHorizontal: 14,
+    paddingTop: 4,
+    paddingBottom: 16,
   },
-  card: {
+  halfColumn: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
-    shadowRadius: 6,
-    elevation: 1,
+    paddingHorizontal: 6,
+  },
+  verticalDivider: {
+    width: 1,
+    backgroundColor: '#EDF0F6',
+    marginVertical: 6,
+    marginHorizontal: 6,
   },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    marginBottom: 12,
+    gap: 5,
+    marginBottom: 10,
   },
   headerTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#334155',
+    fontSize: 12.5,
+    fontWeight: '600',
+    color: '#64748B',
   },
   barsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: 4,
+    paddingRight: 6,
     marginBottom: 10,
   },
   slantedBar: {
-    width: 10,
+    width: 14,
     height: 22,
-    borderRadius: 5,
-    transform: [{ skewX: '-16deg' }],
+    borderRadius: 4.5,
+    transform: [{ skewX: '-14deg' }],
+    overflow: 'hidden',
   },
   barGreenFilled: {
-    backgroundColor: '#86EFAC', // Soft pastel green matching screenshot 2
+    backgroundColor: '#4BA872',
+  },
+  barGreenSoft: {
+    backgroundColor: '#DFEFE4',
   },
   barPending: {
-    backgroundColor: '#EEF2F6',
+    backgroundColor: '#E5E8EF',
   },
   barAmberFilled: {
-    backgroundColor: '#FBBF24',
+    backgroundColor: '#F59E0B',
   },
   barPeachPending: {
-    backgroundColor: '#FFEDD5', // Soft peach matching screenshot
+    backgroundColor: '#F7EADF',
   },
   footerLabel: {
-    fontSize: 12,
+    fontSize: 12.5,
     color: '#64748B',
     fontWeight: '500',
   },
   boldText: {
+    fontSize: 17,
     color: '#0F172A',
     fontWeight: '800',
   },
 });
-

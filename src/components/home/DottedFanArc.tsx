@@ -1,50 +1,115 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import Svg, { Circle } from 'react-native-svg';
+import Svg, { Circle, Text as SvgText } from 'react-native-svg';
 
 interface DottedFanArcProps {
-  percentage: number; // 0 to 100
+  /** Today completion percentage (0 to 100) */
+  percentage: number;
+  /** Weekly average percentage (0 to 100) rendered along the middle ring */
+  weekPercentage?: number;
+  /** Streak progress percentage (0 to 100) rendered along the inner ring */
+  streakPercentage?: number;
 }
+
+const ARCH_LABEL = 'TODAY · WEEK · STREAK';
 
 /**
  * Hemicycle Dotted Fan Arc Gauge (Exact match to Routinr Home Screen)
- * Displays concentric dotted semicircle arcs with filled progress dots and center percentage.
+ * Displays 3 concentric arcs of 19 aligned radial spoke dots (Today, Week, Streak),
+ * symmetrically arched "TODAY · WEEK · STREAK" label, and large center today percentage.
  */
-export const DottedFanArc: React.FC<DottedFanArcProps> = ({ percentage }) => {
+export const DottedFanArc: React.FC<DottedFanArcProps> = ({
+  percentage,
+  weekPercentage = 0,
+  streakPercentage = 0,
+}) => {
   const width = 320;
-  const height = 175;
+  const height = 186;
   const cx = width / 2;
-  const cy = height - 15;
+  const cy = height - 10;
+  const spokeCount = 19;
 
-  // 3 concentric rows of dots
+  // 3 concentric rows aligned along 19 radial fan spokes
   const rows = [
-    { radius: 68, count: 18, dotR: 3.8, activeColor: '#3B82F6' },  // Inner row (Blue)
-    { radius: 92, count: 22, dotR: 4.2, activeColor: '#10B981' },  // Middle row (Green)
-    { radius: 116, count: 26, dotR: 4.6, activeColor: '#6366F1' }, // Outer row (Indigo)
+    {
+      radius: 68,
+      dotR: 4.3,
+      value: streakPercentage,
+      activeColor: '#F59E0B',
+      fadeColor: '#FDE68A',
+    }, // Inner row (Streak)
+    {
+      radius: 90,
+      dotR: 4.7,
+      value: weekPercentage,
+      activeColor: '#15803D',
+      fadeColor: '#9BC4AA',
+    }, // Middle row (Week)
+    {
+      radius: 112,
+      dotR: 5.0,
+      value: percentage,
+      activeColor: '#5965E6',
+      fadeColor: '#B5BCF8',
+    }, // Outer row (Today)
   ];
+
+  // Cross-platform symmetric polar character placement along the top arch
+  const textRadius = 132;
+  const chars = ARCH_LABEL.split('');
+  const totalSpanDeg = 54; // Symmetrical -27deg to +27deg around 12 o'clock
+  const stepDeg = totalSpanDeg / (chars.length - 1);
 
   return (
     <View style={styles.container}>
-      {/* Header Tag */}
-      <Text style={styles.headerTag}>TODAY · WEEK · STREAK</Text>
-
-      {/* SVG Dotted Semicircle */}
       <View style={styles.svgWrapper}>
         <Svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
-          {rows.map((row, rowIndex) => {
-            const dots = [];
-            for (let i = 0; i < row.count; i++) {
-              // Angle from 180 (left) to 0 (right)
-              const fraction = i / (row.count - 1);
-              const angleRad = Math.PI - fraction * Math.PI;
+          {/* Symmetrically Arched "TODAY · WEEK · STREAK" label */}
+          {chars.map((char, idx) => {
+            const offsetDeg = -totalSpanDeg / 2 + idx * stepDeg;
+            const angleRad = ((90 - offsetDeg) * Math.PI) / 180;
+            const x = cx + textRadius * Math.cos(angleRad);
+            const y = cy - textRadius * Math.sin(angleRad);
 
+            return (
+              <SvgText
+                key={`arch-char-${idx}`}
+                x={x}
+                y={y}
+                fill="#7C8598"
+                fontSize="10.5"
+                fontWeight="600"
+                textAnchor="middle"
+                alignmentBaseline="middle"
+                transform={`rotate(${offsetDeg}, ${x}, ${y})`}
+              >
+                {char}
+              </SvgText>
+            );
+          })}
+
+          {/* Concentric fan-aligned dot rows */}
+          {rows.map((row, rowIndex) => {
+            const exactFill = (Math.max(0, Math.min(100, row.value)) / 100) * spokeCount;
+            const fullDots = Math.floor(exactFill);
+            const hasFadeDot = exactFill - fullDots >= 0.15;
+
+            return Array.from({ length: spokeCount }).map((_, i) => {
+              const fraction = i / (spokeCount - 1);
+              const angleRad = Math.PI - fraction * Math.PI;
               const x = cx + row.radius * Math.cos(angleRad);
               const y = cy - row.radius * Math.sin(angleRad);
 
-              const isFilled = fraction <= percentage / 100 && percentage > 0;
-              const dotColor = isFilled ? row.activeColor : '#E2E8F0';
+              let dotColor = '#E2E5EC';
+              if (row.value > 0) {
+                if (i < fullDots) {
+                  dotColor = row.activeColor;
+                } else if (i === fullDots && hasFadeDot) {
+                  dotColor = row.fadeColor;
+                }
+              }
 
-              dots.push(
+              return (
                 <Circle
                   key={`${rowIndex}-${i}`}
                   cx={x}
@@ -53,8 +118,7 @@ export const DottedFanArc: React.FC<DottedFanArcProps> = ({ percentage }) => {
                   fill={dotColor}
                 />
               );
-            }
-            return dots;
+            });
           })}
         </Svg>
 
@@ -71,14 +135,8 @@ export const DottedFanArc: React.FC<DottedFanArcProps> = ({ percentage }) => {
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    marginVertical: 12,
-  },
-  headerTag: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#64748B',
-    letterSpacing: 2.5,
-    marginBottom: 6,
+    marginTop: 6,
+    marginBottom: 8,
   },
   svgWrapper: {
     position: 'relative',
@@ -87,7 +145,7 @@ const styles = StyleSheet.create({
   },
   centerContent: {
     position: 'absolute',
-    bottom: 12,
+    bottom: 8,
     alignItems: 'center',
   },
   percentageNumber: {
@@ -99,9 +157,8 @@ const styles = StyleSheet.create({
   percentageLabel: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#64748B',
+    color: '#334155',
     letterSpacing: 1.5,
     marginTop: 2,
   },
 });
-

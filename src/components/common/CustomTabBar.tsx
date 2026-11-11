@@ -30,7 +30,7 @@ export const CustomTabBar: React.FC<CustomTabBarProps> = ({
   const tabIcons: Record<string, { outline: string; active: string; label: string }> = {
     index: { outline: 'home-outline', active: 'home', label: 'Home' },
     discover: { outline: 'compass-outline', active: 'compass', label: 'Discover' },
-    stats: { outline: 'speedometer-outline', active: 'speedometer', label: 'Stats' },
+    stats: { outline: 'pie-chart-outline', active: 'pie-chart', label: 'Stats' },
     profile: { outline: 'person-outline', active: 'person', label: 'Profile' },
   };
 

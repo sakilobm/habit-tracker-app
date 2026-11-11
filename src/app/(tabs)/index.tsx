@@ -12,8 +12,8 @@ import { useHomeHabits } from '../../features/habits/hooks/useHomeHabits';
 
 /**
  * Declarative Home View Shell (< 150 lines)
- * Hosts signature curved lavender header, hemicycle fan arc, week & streak cards,
- * and 3 layout variants (compact list, dual mini-tracker, and grid).
+ * Hosts curved lavender header, unified white analytics sheet (hemicycle + week/streak),
+ * and 3 habit layout variants (list, dual mini-calendar, grid) over a soft #F6F7FB canvas.
  */
 export default function HomeScreen() {
   const router = useRouter();
@@ -25,6 +25,8 @@ export default function HomeScreen() {
     scrollY,
     completionPercentage,
     streakDays,
+    streakTarget,
+    streakPercentage,
     weekAverage,
     handleScroll,
     handleToggleHabit,
@@ -42,55 +44,38 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
         onScroll={handleScroll}
         scrollEventThrottle={16}
-        alwaysBounceVertical={true}
-        bounces={true}
+        alwaysBounceVertical
+        bounces
       >
-        <View style={styles.topSpacer} />
-        <DottedFanArc percentage={completionPercentage} />
-        <WeekAndStreakCards
-          weekAverage={weekAverage}
-          streakDays={streakDays}
-          streakTarget={3}
-        />
+        <View style={styles.analyticsSheet}>
+          <View style={styles.topSpacer} />
+          <DottedFanArc
+            percentage={completionPercentage}
+            weekPercentage={weekAverage}
+            streakPercentage={streakPercentage}
+          />
+          <WeekAndStreakCards weekAverage={weekAverage} streakDays={streakDays} streakTarget={streakTarget} />
+        </View>
 
-        {layoutMode === 'list' && (
-          <View style={styles.listContainer}>
-            {habits.map((h) => (
-              <RoutinrHabitCard
-                key={h.id}
-                habit={h}
-                onPress={handleOpenSheet}
-                onToggle={handleToggleHabit}
-              />
+        <View style={styles.cardsSection}>
+          {layoutMode === 'list' &&
+            habits.map((h) => (
+              <RoutinrHabitCard key={h.id} habit={h} onPress={handleOpenSheet} onToggle={handleToggleHabit} />
             ))}
-          </View>
-        )}
 
-        {layoutMode === 'dual' && (
-          <View style={styles.listContainer}>
-            {habits.map((h) => (
-              <HabitCardDual
-                key={h.id}
-                habit={h}
-                onPress={handleOpenSheet}
-                onToggle={handleToggleHabit}
-              />
+          {layoutMode === 'dual' &&
+            habits.map((h) => (
+              <HabitCardDual key={h.id} habit={h} onPress={handleOpenSheet} onToggle={handleToggleHabit} />
             ))}
-          </View>
-        )}
 
-        {layoutMode === 'grid' && (
-          <View style={styles.gridContainer}>
-            {habits.map((h) => (
-              <HabitCardGrid
-                key={h.id}
-                habit={h}
-                onPress={handleOpenSheet}
-                onToggle={handleToggleHabit}
-              />
-            ))}
-          </View>
-        )}
+          {layoutMode === 'grid' && (
+            <View style={styles.gridContainer}>
+              {habits.map((h) => (
+                <HabitCardGrid key={h.id} habit={h} onPress={handleOpenSheet} onToggle={handleToggleHabit} />
+              ))}
+            </View>
+          )}
+        </View>
       </Animated.ScrollView>
 
       <HomeHeaderWithCalendar
@@ -100,7 +85,7 @@ export default function HomeScreen() {
         onSelectDate={setSelectedDate}
         scrollY={scrollY}
         onPressProfile={() => router.push('/profile')}
-        onOpenCalendar={() => { }}
+        onOpenCalendar={() => {}}
       />
 
       <HabitActionSheet
@@ -114,29 +99,23 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  container: { flex: 1, backgroundColor: '#F6F7FB' },
+  scrollView: { flex: 1 },
+  scrollContent: { paddingBottom: 240, backgroundColor: '#F6F7FB' },
+  analyticsSheet: {
     backgroundColor: '#FFFFFF',
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
+    paddingBottom: 4,
+    borderBottomWidth: 1,
+    borderColor: '#ECEFF6',
+    shadowColor: '#1E293B',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 8,
+    elevation: 1,
   },
-  scrollView: {
-    flex: 1,
-  },
-  topSpacer: {
-
-    height: 230,
-  },
-  scrollContent: {
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 240,
-    backgroundColor: '#FFFFFF',
-  },
-  listContainer: {
-    marginTop: 6,
-  },
-  gridContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 6,
-  },
+  topSpacer: { height: 234 },
+  cardsSection: { paddingHorizontal: 16, paddingTop: 14 },
+  gridContainer: { flexDirection: 'row', flexWrap: 'wrap' },
 });
