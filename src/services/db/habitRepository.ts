@@ -129,6 +129,26 @@ export const habitRepository = {
   },
 
   /**
+   * Fetch all habit logs within an inclusive date range (YYYY-MM-DD)
+   */
+  getLogsBetween(startDate: string, endDate: string): HabitLog[] {
+    const db = getDatabase();
+    const rows = db.getAllSync<any>(
+      `SELECT * FROM habit_logs WHERE date >= ? AND date <= ? ORDER BY date ASC`,
+      [startDate, endDate]
+    );
+    return rows.map((row) => ({
+      id: row.id,
+      habitId: row.habit_id,
+      date: row.date,
+      status: row.status as HabitLogStatus,
+      value: row.value ?? 0,
+      notes: row.notes ?? undefined,
+      createdAt: row.created_at,
+    }));
+  },
+
+  /**
    * Calculate detailed statistics for a habit (matching Routinr's exact 2x2 stats card and 30-day history)
    */
   getHabitStatistics(habitId: string): HabitStatistics {
