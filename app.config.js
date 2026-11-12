@@ -52,7 +52,7 @@ module.exports = {
     android: {
       adaptiveIcon: {
         foregroundImage: "./assets/adaptive-icon.png",
-        backgroundColor: "#0B0F19"
+        backgroundColor: "#fadcc8"
       },
       package: process.env.APP_PACKAGE || "com.habittracker.app",
       versionCode: versionInfo.versionCode,
@@ -63,7 +63,8 @@ module.exports = {
       "expo-sqlite",
       "expo-font",
       "expo-notifications",
-      "./plugins/withAndroidSigning"
+      "./plugins/withAndroidSigning",
+      "./plugins/withCustomAndroidIcons"
     ]
   }
 };
