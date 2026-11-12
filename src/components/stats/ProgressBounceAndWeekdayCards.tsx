@@ -232,3 +232,4 @@ const styles = StyleSheet.create({
   rankedFill: { height: '100%', borderRadius: 3.5, backgroundColor: '#7C83FD' },
   rankedSub: { fontSize: 12, fontWeight: '500', color: '#64748B' },
 });
+
