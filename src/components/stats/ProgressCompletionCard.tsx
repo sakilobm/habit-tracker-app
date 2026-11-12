@@ -9,6 +9,7 @@ interface ProgressCompletionCardProps {
   elapsedDueCheckIns: number;
   statusHeadline: string;
   deltaPts: number;
+  hasPreviousData?: boolean;
   previousPeriodLabel: string;
   perfectDays: number;
   elapsedDaysCount: number;
@@ -27,6 +28,7 @@ export const ProgressCompletionCard: React.FC<ProgressCompletionCardProps> = ({
   elapsedDueCheckIns,
   statusHeadline,
   deltaPts,
+  hasPreviousData = true,
   previousPeriodLabel,
   perfectDays,
   elapsedDaysCount,
@@ -107,32 +109,38 @@ export const ProgressCompletionCard: React.FC<ProgressCompletionCardProps> = ({
 
         <View style={styles.statusCol}>
           <Text style={styles.statusHeadline}>{statusHeadline}</Text>
-          <View style={styles.deltaRow}>
-            <View
-              style={[
-                styles.deltaPill,
-                isNegative
-                  ? styles.deltaPillNeg
-                  : isPositive
-                    ? styles.deltaPillPos
-                    : styles.deltaPillNeutral,
-              ]}
-            >
-              <Text
+          {!hasPreviousData ? (
+            <Text style={styles.noCompareText}>
+              Nothing to compare with {previousPeriodLabel.replace('vs ', '')}.
+            </Text>
+          ) : (
+            <View style={styles.deltaRow}>
+              <View
                 style={[
-                  styles.deltaPillText,
+                  styles.deltaPill,
                   isNegative
-                    ? styles.deltaTextNeg
+                    ? styles.deltaPillNeg
                     : isPositive
-                      ? styles.deltaTextPos
-                      : styles.deltaTextNeutral,
+                      ? styles.deltaPillPos
+                      : styles.deltaPillNeutral,
                 ]}
               >
-                {isNegative ? `↓ ${Math.abs(deltaPts)} pts` : isPositive ? `↑ ${deltaPts} pts` : '— 0 pts'}
-              </Text>
+                <Text
+                  style={[
+                    styles.deltaPillText,
+                    isNegative
+                      ? styles.deltaTextNeg
+                      : isPositive
+                        ? styles.deltaTextPos
+                        : styles.deltaTextNeutral,
+                  ]}
+                >
+                  {isNegative ? `↓ ${Math.abs(deltaPts)} pts` : isPositive ? `↑ ${deltaPts} pts` : '— 0 pts'}
+                </Text>
+              </View>
+              <Text style={styles.deltaCompare}>{previousPeriodLabel}</Text>
             </View>
-            <Text style={styles.deltaCompare}>{previousPeriodLabel}</Text>
-          </View>
+          )}
         </View>
       </View>
 
@@ -274,6 +282,12 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '500',
     color: '#64748B',
+  },
+  noCompareText: {
+    fontSize: 13.5,
+    fontWeight: '500',
+    color: '#64748B',
+    lineHeight: 19,
   },
   tilesRow: {
     flexDirection: 'row',

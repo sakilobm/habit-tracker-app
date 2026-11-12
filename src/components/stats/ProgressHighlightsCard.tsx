@@ -71,8 +71,14 @@ const CARD_OPTIONS: { id: ProgressCardId; label: string }[] = [
   { id: 'streak', label: 'Current streak' },
   { id: 'completion', label: 'Completion ring' },
   { id: 'pace', label: 'Pace & projection' },
-  { id: 'dayByDay', label: 'Day by day chart' },
+  { id: 'dayByDay', label: 'Day / Week chart' },
+  { id: 'calendar', label: 'Month calendar' },
   { id: 'habitsByDay', label: 'Habits by day matrix' },
+  { id: 'dayMix', label: 'Day mix' },
+  { id: 'habitMap', label: 'Habit map' },
+  { id: 'bounceBack', label: 'Bounce back' },
+  { id: 'byWeekday', label: 'By weekday' },
+  { id: 'habitsRanked', label: 'Habits breakdown' },
   { id: 'highlights', label: 'Highlights' },
 ];
 

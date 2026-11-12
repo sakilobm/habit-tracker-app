@@ -1,8 +1,11 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Animated, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ProgressPeriod } from '../../features/stats/hooks/useProgressStats';
+
+const { width } = Dimensions.get('window');
+const TAB_WIDTH = (width - 36) / 3;
 
 interface ProgressHeaderProps {
   period: ProgressPeriod;
@@ -20,10 +23,10 @@ const PERIOD_TABS: { key: ProgressPeriod; label: string }[] = [
 
 /**
  * Progress Tab Header
- * Displays "Progress" title, active period subtitle, < / > period steppers,
- * and Week / Month / Year underline tabs matching the reference layout.
+ * Displays "Progress" title, active period subtitle, < / > steppers,
+ * and a GPU-accelerated sliding underline indicator across Week / Month / Year tabs.
  */
-export const ProgressHeader: React.FC<ProgressHeaderProps> = ({
+export const ProgressHeader: React.FC<ProgressHeaderProps> = React.memo(({
   period,
   periodLabel,
   canGoNext,
@@ -31,6 +34,17 @@ export const ProgressHeader: React.FC<ProgressHeaderProps> = ({
   onStepPeriod,
 }) => {
   const insets = useSafeAreaInsets();
+  const activeIdx = PERIOD_TABS.findIndex((t) => t.key === period);
+  const indicatorX = useRef(new Animated.Value(activeIdx * TAB_WIDTH)).current;
+
+  useEffect(() => {
+    Animated.spring(indicatorX, {
+      toValue: activeIdx * TAB_WIDTH,
+      useNativeDriver: true,
+      speed: 22,
+      bounciness: 3,
+    }).start();
+  }, [activeIdx, indicatorX]);
 
   return (
     <View style={[styles.container, { paddingTop: Math.max(insets.top, 20) + 10 }]}>
@@ -67,7 +81,7 @@ export const ProgressHeader: React.FC<ProgressHeaderProps> = ({
         </View>
       </View>
 
-      {/* Week | Month | Year Underline Tabs */}
+      {/* Week | Month | Year Tabs with GPU-Accelerated Sliding Underline */}
       <View style={styles.tabsRow}>
         {PERIOD_TABS.map((tab) => {
           const isActive = period === tab.key;
@@ -81,14 +95,23 @@ export const ProgressHeader: React.FC<ProgressHeaderProps> = ({
               <Text style={[styles.tabLabel, isActive && styles.tabLabelActive]}>
                 {tab.label}
               </Text>
-              {isActive && <View style={styles.activeUnderline} />}
             </TouchableOpacity>
           );
         })}
+
+        <Animated.View
+          style={[
+            styles.slidingIndicatorWrap,
+            { transform: [{ translateX: indicatorX }] },
+          ]}
+          pointerEvents="none"
+        >
+          <View style={styles.activeUnderline} />
+        </Animated.View>
       </View>
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {
@@ -128,13 +151,13 @@ const styles = StyleSheet.create({
   },
   tabsRow: {
     flexDirection: 'row',
-    paddingHorizontal: 18,
+    marginHorizontal: 18,
+    position: 'relative',
   },
   tabItem: {
     flex: 1,
     alignItems: 'center',
     paddingVertical: 10,
-    position: 'relative',
   },
   tabLabel: {
     fontSize: 14.5,
@@ -145,13 +168,17 @@ const styles = StyleSheet.create({
     color: '#0F172A',
     fontWeight: '700',
   },
-  activeUnderline: {
+  slidingIndicatorWrap: {
     position: 'absolute',
     bottom: 0,
+    left: 0,
+    width: TAB_WIDTH,
+    alignItems: 'center',
+  },
+  activeUnderline: {
     width: '78%',
     height: 3,
     borderRadius: 2,
     backgroundColor: '#7C83FD',
   },
 });
-

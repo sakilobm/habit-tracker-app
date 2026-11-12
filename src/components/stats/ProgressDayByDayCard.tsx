@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { DayBarItem } from '../../features/stats/hooks/useProgressStats';
 
 interface ProgressDayByDayCardProps {
+  title?: string;
+  showDashedBaseline?: boolean;
   bars: DayBarItem[];
   averagePct: number;
   selectedBarKey: string | null;
@@ -10,10 +12,12 @@ interface ProgressDayByDayCardProps {
 }
 
 /**
- * Progress Card 4: Day-by-Day Vertical Capsule Bar Chart
+ * Progress Card 4: Day-by-Day / Week-by-Week Vertical Capsule Bar Chart
  * Renders tall rounded capsule tracks with bottom-up progress fill and interactive tap inspection.
  */
-export const ProgressDayByDayCard: React.FC<ProgressDayByDayCardProps> = ({
+export const ProgressDayByDayCard: React.FC<ProgressDayByDayCardProps> = React.memo(({
+  title = 'Day by day',
+  showDashedBaseline = false,
   bars,
   averagePct,
   selectedBarKey,
@@ -27,7 +31,7 @@ export const ProgressDayByDayCard: React.FC<ProgressDayByDayCardProps> = ({
       {/* Header */}
       <View style={styles.headerRow}>
         <View>
-          <Text style={styles.cardTitle}>Day by day</Text>
+          <Text style={styles.cardTitle}>{title}</Text>
           {selectedBar && (
             <Text style={styles.selectedInfo}>
               {selectedBar.label}: {selectedBar.completedCount}/{selectedBar.dueCount} done ({selectedBar.percentage}%)
@@ -42,54 +46,57 @@ export const ProgressDayByDayCard: React.FC<ProgressDayByDayCardProps> = ({
       </View>
 
       {/* Vertical Capsule Bars */}
-      <View style={styles.barsRow}>
-        {bars.map((bar) => {
-          const isSelected = bar.key === selectedBarKey;
-          const fillHeightPct = Math.max(0, Math.min(100, bar.percentage));
+      <View style={styles.barsWrapper}>
+        {showDashedBaseline && <View style={styles.dashedBaseline} pointerEvents="none" />}
+        <View style={styles.barsRow}>
+          {bars.map((bar) => {
+            const isSelected = bar.key === selectedBarKey;
+            const fillHeightPct = Math.max(0, Math.min(100, bar.percentage));
 
-          return (
-            <TouchableOpacity
-              key={bar.key}
-              style={styles.barCol}
-              onPress={() => onSelectBar(isSelected ? null : bar.key)}
-              activeOpacity={0.75}
-            >
-              <View
-                style={[
-                  styles.barTrack,
-                  { width: barWidth, borderRadius: barWidth / 2 },
-                  isSelected && styles.barTrackSelected,
-                ]}
+            return (
+              <TouchableOpacity
+                key={bar.key}
+                style={styles.barCol}
+                onPress={() => onSelectBar(isSelected ? null : bar.key)}
+                activeOpacity={0.75}
               >
-                {fillHeightPct > 0 && (
-                  <View
-                    style={[
-                      styles.barFill,
-                      {
-                        height: `${fillHeightPct}%`,
-                        borderRadius: barWidth / 2,
-                      },
-                    ]}
-                  />
-                )}
-              </View>
+                <View
+                  style={[
+                    styles.barTrack,
+                    { width: barWidth, borderRadius: barWidth / 2 },
+                    isSelected && styles.barTrackSelected,
+                  ]}
+                >
+                  {fillHeightPct > 0 && (
+                    <View
+                      style={[
+                        styles.barFill,
+                        {
+                          height: `${fillHeightPct}%`,
+                          borderRadius: barWidth / 2,
+                        },
+                      ]}
+                    />
+                  )}
+                </View>
 
-              <Text
-                style={[
-                  styles.barLabel,
-                  bar.isToday && styles.barLabelToday,
-                  isSelected && styles.barLabelSelected,
-                ]}
-              >
-                {bar.label}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
+                <Text
+                  style={[
+                    styles.barLabel,
+                    bar.isToday && styles.barLabelToday,
+                    isSelected && styles.barLabelSelected,
+                  ]}
+                >
+                  {bar.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
       </View>
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   card: {
@@ -134,6 +141,18 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '500',
     color: '#64748B',
+  },
+  barsWrapper: {
+    position: 'relative',
+  },
+  dashedBaseline: {
+    position: 'absolute',
+    left: 4,
+    right: 4,
+    bottom: 28,
+    borderBottomWidth: 1.5,
+    borderStyle: 'dashed',
+    borderColor: '#CBD5E1',
   },
   barsRow: {
     flexDirection: 'row',
