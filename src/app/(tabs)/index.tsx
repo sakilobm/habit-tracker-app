@@ -91,7 +91,7 @@ export default function HomeScreen() {
         onSelectDate={setSelectedDate}
         scrollY={scrollY}
         onPressProfile={() => router.push('/profile')}
-        onOpenCalendar={() => {}}
+        onOpenCalendar={() => { }}
       />
 
       <HabitActionSheet
@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
   scrollView: { flex: 1 },
   scrollContent: { backgroundColor: '#F6F7FB' },
   analyticsSheet: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#ffff',
     borderBottomLeftRadius: 28,
     borderBottomRightRadius: 28,
     paddingBottom: 4,

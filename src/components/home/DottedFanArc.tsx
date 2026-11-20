@@ -34,21 +34,21 @@ export const DottedFanArc: React.FC<DottedFanArcProps> = ({
   const rows = [
     {
       radius: 94,
-      dotR: 4.2,
+      dotR: 5.2,
       value: streakPercentage,
       activeColor: '#F59E0B',
       fadeColor: '#FDE68A',
     }, // Inner row (Streak)
     {
       radius: 114,
-      dotR: 4.5,
+      dotR: 5.5,
       value: weekPercentage,
       activeColor: '#15803D',
       fadeColor: '#9BC4AA',
     }, // Middle row (Week)
     {
       radius: 134,
-      dotR: 4.8,
+      dotR: 5.8,
       value: percentage,
       activeColor: '#5965E6',
       fadeColor: '#B5BCF8',
@@ -142,7 +142,7 @@ export const DottedFanArc: React.FC<DottedFanArcProps> = ({
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    marginTop: 2,
+    marginTop: 38,
     marginBottom: 6,
   },
   svgWrapper: {

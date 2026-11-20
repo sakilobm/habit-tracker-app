@@ -7,7 +7,7 @@ import { HabitLayoutMode } from '../../types/habit';
 import { format, startOfWeek, addDays } from 'date-fns';
 
 /** Height of the 7-day ribbon row (px). Must match the rendered height exactly. */
-const RIBBON_HEIGHT = 78;
+const RIBBON_HEIGHT = 95;
 
 interface HomeHeaderWithCalendarProps {
   currentLayout: HabitLayoutMode;
@@ -505,6 +505,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
+    paddingVertical: 10,
   },
   avatarOuterRing: {
     width: 44,
@@ -531,8 +532,8 @@ const styles = StyleSheet.create({
     letterSpacing: 0.2,
   },
   calendarButton: {
-    width: 42,
-    height: 42,
+    width: 36,
+    height: 36,
     borderRadius: 21,
     backgroundColor: 'rgba(255, 255, 255, 0.18)',
     justifyContent: 'center',
@@ -551,12 +552,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingTop: 2,
-    paddingBottom: 6,
+    paddingBottom: 9,
   },
   dayPill: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: 7,
+    paddingVertical: 10,
     borderRadius: 16,
     marginHorizontal: 3,
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
