@@ -1,9 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Path, Line } from 'react-native-svg';
-
-const { width } = Dimensions.get('window');
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface CustomTabBarProps {
   state: {
@@ -34,13 +33,18 @@ export const CustomTabBar: React.FC<CustomTabBarProps> = ({
     profile: { outline: 'person-outline', active: 'person', label: 'Profile' },
   };
 
+  const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const bottomInset = Math.max(insets.bottom, 0);
+  const totalBarHeight = 68 + bottomInset;
   const centerIndex = 2; // Split 2 tabs on left, 2 tabs on right
   const cx = width / 2;
+  const svgHeight = totalBarHeight + 10;
 
   return (
-    <View style={styles.container} pointerEvents="box-none">
+    <View style={[styles.container, { height: totalBarHeight }]} pointerEvents="box-none">
       {/* SVG Notched Background with Deep Smooth Scoop for Air-Gap */}
-      <Svg width={width} height={75} style={StyleSheet.absoluteFill} pointerEvents="none">
+      <Svg width={width} height={svgHeight} style={StyleSheet.absoluteFill} pointerEvents="none">
         <Path
           d={`
             M 0 0
@@ -48,8 +52,8 @@ export const CustomTabBar: React.FC<CustomTabBarProps> = ({
             C ${cx - 38} 0, ${cx - 36} 36, ${cx} 36
             C ${cx + 36} 36, ${cx + 38} 0, ${cx + 52} 0
             L ${width} 0
-            L ${width} 75
-            L 0 75
+            L ${width} ${svgHeight}
+            L 0 ${svgHeight}
             Z
           `}
           fill="#FFFFFF"
@@ -108,7 +112,15 @@ export const CustomTabBar: React.FC<CustomTabBarProps> = ({
       </View>
 
       {/* Tab Navigation Items */}
-      <View style={styles.tabsRow}>
+      <View
+        style={[
+          styles.tabsRow,
+          {
+            height: 64 + (bottomInset > 0 ? bottomInset * 0.4 : 0),
+            paddingBottom: bottomInset > 0 ? bottomInset * 0.6 : 0,
+          },
+        ]}
+      >
         {state.routes.map((route, index: number) => {
           const isFocused = state.index === index;
           const { options } = descriptors[route.key] || { options: {} };
@@ -180,7 +192,8 @@ const styles = StyleSheet.create({
   centerButtonWrapper: {
     position: 'absolute',
     top: -24,
-    left: width / 2 - 29,
+    left: '50%',
+    marginLeft: -29,
     width: 58,
     height: 54,
     zIndex: 20,

@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { HomeHeaderWithCalendar } from '../../components/home/HomeHeaderWithCalendar';
 import { DottedFanArc } from '../../components/home/DottedFanArc';
 import { WeekAndStreakCards } from '../../components/home/WeekAndStreakCards';
@@ -17,6 +18,7 @@ import { useHomeHabits } from '../../features/habits/hooks/useHomeHabits';
  */
 export default function HomeScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const {
     habits,
     layoutMode,
@@ -36,11 +38,15 @@ export default function HomeScreen() {
     setSelectedDate,
   } = useHomeHabits();
 
+  // Dynamic spacer & bottom clearance scaled to physical status bar & gesture navigation
+  const topSpacerHeight = Math.max(insets.top, 24) + 148;
+  const bottomPadding = Math.max(insets.bottom, 16) + 80;
+
   return (
     <View style={styles.container}>
       <Animated.ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: bottomPadding }]}
         showsVerticalScrollIndicator={false}
         onScroll={handleScroll}
         scrollEventThrottle={16}
@@ -48,7 +54,7 @@ export default function HomeScreen() {
         bounces
       >
         <View style={styles.analyticsSheet}>
-          <View style={styles.topSpacer} />
+          <View style={[styles.topSpacer, { height: topSpacerHeight }]} />
           <DottedFanArc
             percentage={completionPercentage}
             weekPercentage={weekAverage}
@@ -101,7 +107,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F6F7FB' },
   scrollView: { flex: 1 },
-  scrollContent: { paddingBottom: 240, backgroundColor: '#F6F7FB' },
+  scrollContent: { backgroundColor: '#F6F7FB' },
   analyticsSheet: {
     backgroundColor: '#FFFFFF',
     borderBottomLeftRadius: 28,
@@ -115,7 +121,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 1,
   },
-  topSpacer: { height: 234 },
+  topSpacer: { width: '100%' },
   cardsSection: { paddingHorizontal: 16, paddingTop: 14 },
   gridContainer: { flexDirection: 'row', flexWrap: 'wrap' },
 });

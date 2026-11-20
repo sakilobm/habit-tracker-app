@@ -1,14 +1,10 @@
 import React, { useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Animated } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, useWindowDimensions, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Rect, Path, Defs, Pattern, Line, ClipPath, Circle } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { HabitLayoutMode } from '../../types/habit';
 import { format, startOfWeek, addDays } from 'date-fns';
-
-const { width } = Dimensions.get('window');
-/** Full-bleed width rounded up (+2px) to prevent subpixel gaps on the right edge */
-const FULL_W = Math.ceil(width) + 2;
 
 /** Height of the 7-day ribbon row (px). Must match the rendered height exactly. */
 const RIBBON_HEIGHT = 78;
@@ -48,6 +44,8 @@ export const HomeHeaderWithCalendar: React.FC<HomeHeaderWithCalendarProps> = ({
   todayProgress = 0.65,
 }) => {
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const FULL_W = Math.ceil(width) + 2;
   const currentDate = new Date(selectedDate);
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 }); // Monday
 
@@ -602,13 +600,13 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   curveAndPodWrapper: {
-    width: FULL_W,
+    width: '100%',
     height: 70,
     position: 'relative',
   },
   waveSvgContainer: {
     marginTop: -1,
-    width: FULL_W,
+    width: '100%',
     height: 70,
   },
   podContainer: {

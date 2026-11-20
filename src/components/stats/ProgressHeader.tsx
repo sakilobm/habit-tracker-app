@@ -1,11 +1,9 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Animated, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ProgressPeriod } from '../../features/stats/hooks/useProgressStats';
-
-const { width } = Dimensions.get('window');
-const TAB_WIDTH = (width - 36) / 3;
 
 interface ProgressHeaderProps {
   period: ProgressPeriod;
@@ -34,20 +32,23 @@ export const ProgressHeader: React.FC<ProgressHeaderProps> = React.memo(({
   onStepPeriod,
 }) => {
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const tabWidth = (width - 36) / 3;
   const activeIdx = PERIOD_TABS.findIndex((t) => t.key === period);
-  const indicatorX = useRef(new Animated.Value(activeIdx * TAB_WIDTH)).current;
+  const indicatorX = useRef(new Animated.Value(activeIdx * tabWidth)).current;
 
   useEffect(() => {
     Animated.spring(indicatorX, {
-      toValue: activeIdx * TAB_WIDTH,
+      toValue: activeIdx * tabWidth,
       useNativeDriver: true,
       speed: 22,
       bounciness: 3,
     }).start();
-  }, [activeIdx, indicatorX]);
+  }, [activeIdx, tabWidth, indicatorX]);
 
   return (
-    <View style={[styles.container, { paddingTop: Math.max(insets.top, 20) + 10 }]}>
+    <View style={[styles.container, { paddingTop: Math.max(insets.top, 16) + 4 }]}>
+      <StatusBar style="dark" />
       {/* Title Row */}
       <View style={styles.titleRow}>
         <View>
@@ -102,7 +103,7 @@ export const ProgressHeader: React.FC<ProgressHeaderProps> = React.memo(({
         <Animated.View
           style={[
             styles.slidingIndicatorWrap,
-            { transform: [{ translateX: indicatorX }] },
+            { width: tabWidth, transform: [{ translateX: indicatorX }] },
           ]}
           pointerEvents="none"
         >
@@ -172,7 +173,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     left: 0,
-    width: TAB_WIDTH,
     alignItems: 'center',
   },
   activeUnderline: {

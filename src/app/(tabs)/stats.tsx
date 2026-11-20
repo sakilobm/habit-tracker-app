@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useProgressStats } from '../../features/stats/hooks/useProgressStats';
 import { useHabitStore } from '../../features/habits/stores/habitStore';
 import { ProgressHeader } from '../../components/stats/ProgressHeader';
@@ -25,6 +26,7 @@ import { HabitActionSheet } from '../../components/home/HabitActionSheet';
  * Renders fast, memoized Week, Month, and Year analytics cards backed by `useProgressStats`.
  */
 export default function StatsScreen() {
+  const insets = useSafeAreaInsets();
   const {
     period, analytics, selectedBarKey, selectedCalendarDate, habitsSortAsc, visibleCards,
     isCustomizeOpen, setIsCustomizeOpen, isCompletionInfoOpen, handleSelectPeriod, handleStepPeriod,
@@ -45,7 +47,10 @@ export default function StatsScreen() {
         onSelectPeriod={handleSelectPeriod} onStepPeriod={handleStepPeriod}
       />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: Math.max(insets.bottom, 16) + 76 }]}
+        showsVerticalScrollIndicator={false}
+      >
         {visibleCards.streak && (
           <ProgressStreakCard currentStreak={analytics.currentStreak} streakDays={analytics.streakDays} />
         )}
@@ -127,7 +132,7 @@ export default function StatsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F6F7FB' },
-  scrollContent: { padding: 16, paddingBottom: 130 },
+  scrollContent: { padding: 16 },
   customizeBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 14, marginTop: 4 },
   customizeText: { fontSize: 14.5, fontWeight: '600', color: '#475569' },
 });
