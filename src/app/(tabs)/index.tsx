@@ -39,7 +39,7 @@ export default function HomeScreen() {
   } = useHomeHabits();
 
   // Dynamic spacer & bottom clearance scaled to physical status bar & gesture navigation
-  const topSpacerHeight = Math.max(insets.top, 24) + 148;
+  const topSpacerHeight = Math.max(insets.top, 24) + 180;
   const bottomPadding = Math.max(insets.bottom, 16) + 80;
 
   return (

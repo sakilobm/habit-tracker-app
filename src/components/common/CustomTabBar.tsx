@@ -57,6 +57,8 @@ export const CustomTabBar: React.FC<CustomTabBarProps> = ({
             Z
           `}
           fill="#FFFFFF"
+          stroke="#E5E8F0"
+          strokeWidth={1}
         />
       </Svg>
 

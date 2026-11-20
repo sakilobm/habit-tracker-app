@@ -23,42 +23,48 @@ export const DottedFanArc: React.FC<DottedFanArcProps> = ({
   weekPercentage = 0,
   streakPercentage = 0,
 }) => {
-  const width = 320;
-  const height = 186;
+  const width = 340;
+  const height = 205;
   const cx = width / 2;
-  const cy = height - 10;
+  const cy = 195;
   const spokeCount = 19;
 
-  // 3 concentric rows aligned along 19 radial fan spokes
+  // 3 expansive concentric rows aligned along 19 radial fan spokes
+  // Radii scaled to provide generous breathing room around the central percentage
   const rows = [
     {
-      radius: 68,
-      dotR: 4.3,
+      radius: 94,
+      dotR: 4.2,
       value: streakPercentage,
       activeColor: '#F59E0B',
       fadeColor: '#FDE68A',
     }, // Inner row (Streak)
     {
-      radius: 90,
-      dotR: 4.7,
+      radius: 114,
+      dotR: 4.5,
       value: weekPercentage,
       activeColor: '#15803D',
       fadeColor: '#9BC4AA',
     }, // Middle row (Week)
     {
-      radius: 112,
-      dotR: 5.0,
+      radius: 134,
+      dotR: 4.8,
       value: percentage,
       activeColor: '#5965E6',
       fadeColor: '#B5BCF8',
     }, // Outer row (Today)
   ];
 
-  // Cross-platform symmetric polar character placement along the top arch
-  const textRadius = 132;
+  // Symmetric polar character placement along the top arch
+  const textRadius = 154;
   const chars = ARCH_LABEL.split('');
-  const totalSpanDeg = 54; // Symmetrical -27deg to +27deg around 12 o'clock
+  const totalSpanDeg = 62; // Symmetrical -31deg to +31deg around 12 o'clock
   const stepDeg = totalSpanDeg / (chars.length - 1);
+
+  // Bottom-most dots lifted 4 degrees above horizontal for an elegant dome
+  const startAngleDeg = 176;
+  const endAngleDeg = 4;
+  const totalArcDeg = startAngleDeg - endAngleDeg;
 
   return (
     <View style={styles.container}>
@@ -96,7 +102,8 @@ export const DottedFanArc: React.FC<DottedFanArcProps> = ({
 
             return Array.from({ length: spokeCount }).map((_, i) => {
               const fraction = i / (spokeCount - 1);
-              const angleRad = Math.PI - fraction * Math.PI;
+              const angleDeg = startAngleDeg - fraction * totalArcDeg;
+              const angleRad = (angleDeg * Math.PI) / 180;
               const x = cx + row.radius * Math.cos(angleRad);
               const y = cy - row.radius * Math.sin(angleRad);
 
@@ -122,7 +129,7 @@ export const DottedFanArc: React.FC<DottedFanArcProps> = ({
           })}
         </Svg>
 
-        {/* Center Percentage Text */}
+        {/* Center Percentage Text with ample clearance from surrounding dots */}
         <View style={styles.centerContent}>
           <Text style={styles.percentageNumber}>{Math.round(percentage)}</Text>
           <Text style={styles.percentageLabel}>% TODAY</Text>
@@ -135,8 +142,8 @@ export const DottedFanArc: React.FC<DottedFanArcProps> = ({
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    marginTop: 6,
-    marginBottom: 8,
+    marginTop: 2,
+    marginBottom: 6,
   },
   svgWrapper: {
     position: 'relative',
@@ -149,15 +156,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   percentageNumber: {
-    fontSize: 48,
-    fontWeight: '900',
+    fontSize: 50,
+    fontWeight: '800',
     color: '#0F172A',
     lineHeight: 52,
+    letterSpacing: -0.5,
   },
   percentageLabel: {
-    fontSize: 12,
+    fontSize: 11.5,
     fontWeight: '700',
-    color: '#334155',
+    color: '#1E293B',
     letterSpacing: 1.5,
     marginTop: 2,
   },
